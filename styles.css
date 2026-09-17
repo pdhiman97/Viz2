@@ -704,19 +704,25 @@ html, body {
   align-items: center;
   padding: 0 28px;
 }
+
+/* Progress fill — spans exactly first dot to last dot via scaleX */
 #doc-progress-fill {
   position: absolute;
   top: 0;
-  left: 0;
+  left: 28px;
   height: 2px;
-  width: 0%;
+  width: calc(100% - 56px);
   background: var(--accent);
-  transition: width linear;
+  transform-origin: left center;
+  transform: scaleX(0);
   pointer-events: none;
 }
+
+/* Chapters row — spread end to end */
 #doc-chapters-row {
   display: flex;
-  gap: 18px;
+  width: 100%;
+  justify-content: space-between;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -724,19 +730,20 @@ html, body {
 .doc-chapter-dot {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   cursor: pointer;
-  opacity: 0.45;
+  opacity: 0.4;
   transition: opacity 0.25s ease;
   font-family: var(--font);
   font-size: 9px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: var(--mid);
   padding: 4px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  max-width: 130px;
+  flex-shrink: 1;
 }
 .doc-chapter-dot:hover { opacity: 0.9; }
 .doc-chapter-dot.active { opacity: 1; color: var(--hi); }
@@ -750,8 +757,9 @@ html, body {
 }
 .doc-chapter-dot.active .doc-chapter-pip {
   background: var(--accent);
-  transform: scale(1.4);
+  transform: scale(1.5);
 }
+
 
 /* ── Floating Callout Card ───────────────────────────────────────── */
 #doc-callout {

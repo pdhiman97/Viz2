@@ -1076,9 +1076,9 @@
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
-    // Restore progress bar
+    // Restore progress fill
     docProgressFill.style.transition = 'none';
-    docProgressFill.style.width = '0%';
+    docProgressFill.style.transform  = 'scaleX(0)';
     // Deactivate all chapter dots
     document.querySelectorAll('.doc-chapter-dot').forEach(d => d.classList.remove('active'));
   }
@@ -1144,14 +1144,18 @@
         docCallout.classList.add('visible');
       }, 100);
 
-      // Animate progress fill across chapter duration
+      // Animate progress fill via scaleX — synced to space-between dot positions
+      // Dot i sits at position i/(N-1), so fill goes from scaleX(i/(N-1)) to scaleX((i+1)/(N-1))
+      const N = DOC_CHAPTERS.length;
+      const scaleStart = idx / (N - 1);
+      const scaleEnd   = Math.min(1, (idx + 1) / (N - 1));
       docProgressFill.style.transition = 'none';
-      const pctStart = (idx / DOC_CHAPTERS.length) * 100;
-      const pctEnd   = ((idx + 1) / DOC_CHAPTERS.length) * 100;
-      docProgressFill.style.width = pctStart + '%';
+      docProgressFill.style.transform  = `scaleX(${scaleStart})`;
       requestAnimationFrame(() => {
-        docProgressFill.style.transition = `width ${ch.duration}ms linear`;
-        docProgressFill.style.width = pctEnd + '%';
+        requestAnimationFrame(() => {
+          docProgressFill.style.transition = `transform ${ch.duration}ms linear`;
+          docProgressFill.style.transform  = `scaleX(${scaleEnd})`;
+        });
       });
 
       // Auto-advance timer
