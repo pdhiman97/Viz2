@@ -62,46 +62,46 @@
       id: 'light',
       name: 'Light Mode',
       decades: {
-        '1920': '#99732B', '1930': '#99732B',
-        '1940': '#3E7B58', '1950': '#3E7B58',
-        '1960': '#B84E25', '1970': '#B84E25',
-        '1980': '#6D43A6', '1990': '#6D43A6',
-        '2000': '#257499', '2010': '#257499',
-        '2020': '#444444', 'unknown': '#777777'
+        '1920': '#D97706', '1930': '#D97706',
+        '1940': '#059669', '1950': '#059669',
+        '1960': '#DC2626', '1970': '#DC2626',
+        '1980': '#7C3AED', '1990': '#7C3AED',
+        '2000': '#0284C7', '2010': '#0284C7',
+        '2020': '#D946EF', 'unknown': '#4B5563'
       },
       genres: {
-        'Drama':     '#B38628',
-        'Action':    '#C45220',
-        'Comedy':    '#4E8832',
-        'Crime':     '#9E3030',
-        'Biography': '#2B6A8A',
-        'Animation': '#A68C1C',
-        'Adventure': '#2E7C58',
-        'Mystery':   '#6E5299',
-        'Horror':    '#821D1D',
-        'Western':   '#9E5B20',
-        'Film-Noir': '#7C6C48',
-        'Fantasy':   '#7735A6',
-        'Family':    '#428854',
-        'Thriller':  '#573787',
-        'Sci-Fi':    '#227E9E',
-        'Romance':   '#A63558',
-        'History':   '#8E5F20',
-        'War':       '#4A5B3E',
-        'Music':     '#B52875',
-        'Musical':   '#AA3098',
-        'Sport':     '#3E8830'
+        'Drama':     '#D97706',
+        'Action':    '#EA580C',
+        'Comedy':    '#16A34A',
+        'Crime':     '#DC2626',
+        'Biography': '#0284C7',
+        'Animation': '#CA8A04',
+        'Adventure': '#0D9488',
+        'Mystery':   '#9333EA',
+        'Horror':    '#991B1B',
+        'Western':   '#C2410C',
+        'Film-Noir': '#334155',
+        'Fantasy':   '#C026D3',
+        'Family':    '#10B981',
+        'Thriller':  '#7E22CE',
+        'Sci-Fi':    '#06B6D4',
+        'Romance':   '#E11D48',
+        'History':   '#B45309',
+        'War':       '#4D7C0F',
+        'Music':     '#DB2777',
+        'Musical':   '#A21CAF',
+        'Sport':     '#65A30D'
       },
-      vinylStops: ['#ECE9E1', '#E1DDD3', '#D6D0C3'],
-      labelStops: ['#F7F5EE', '#EDE9DE'],
-      grooveStroke: 'rgba(0, 0, 0, 0.05)',
-      grooveOuter: 'rgba(0, 0, 0, 0.09)',
-      centerRing: 'rgba(0, 0, 0, 0.06)',
-      centerBorder: '#D8D4C8',
-      centerTitle: '#141414',
-      centerSub: '#666666',
-      centerCount: '#555555',
-      centerHint: '#888888'
+      vinylStops: ['#FFFFFF', '#F8F9FA', '#EDF0F5'],
+      labelStops: ['#FFFFFF', '#F1F4F8'],
+      grooveStroke: 'rgba(15, 23, 42, 0.08)',
+      grooveOuter: 'rgba(15, 23, 42, 0.16)',
+      centerRing: 'rgba(15, 23, 42, 0.08)',
+      centerBorder: '#CBD5E1',
+      centerTitle: '#0F172A',
+      centerSub: '#475569',
+      centerCount: '#334155',
+      centerHint: '#64748B'
     }
   };
 
@@ -664,10 +664,13 @@
 
       const pathData = `M ${p1.x} ${p1.y} Q ${mx} ${my} ${p2.x} ${p2.y}`;
 
+      const strokeColor = (currentTheme === 'light') ? (film.genreColor || '#0F172A') : (film.genreColor || '#89C4DC');
+
       const pathEl = constellationG.append('path')
         .attr('d', pathData)
         .attr('class', 'constellation-line')
-        .attr('stroke', film.genreColor || '#89C4DC');
+        .attr('stroke', strokeColor)
+        .style('stroke', strokeColor);
 
       // Animate draw-in
       const totalLen = pathEl.node().getTotalLength();
