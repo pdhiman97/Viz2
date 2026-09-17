@@ -299,54 +299,8 @@
   const timelineScenery = svg.append('g').attr('class', 'timeline-scenery').style('display', 'none');
   const galaxyScenery   = svg.append('g').attr('class', 'galaxy-scenery').style('display', 'none');
   const constellationG  = svg.append('g').attr('class', 'constellation-layer');
-  const pulseGroup      = svg.append('g').attr('class', 'pulse-layer').attr('pointer-events', 'none');
   const dotsGroup       = svg.append('g').attr('class', 'dots-group');
   const labelG          = svg.append('g').attr('class', 'label-group');
-
-  // Motion Choreographer: Sonic Ripple Shockwave Generator
-  function emitSonicPulse(targetX, targetY, baseRadius, color, isClick = false) {
-    if (!targetX || !targetY) return;
-    const pulseColor = color || 'var(--accent)';
-
-    // Primary expanding ripple
-    const pulse = pulseGroup.append('circle')
-      .attr('cx', targetX)
-      .attr('cy', targetY)
-      .attr('r', baseRadius)
-      .attr('fill', isClick ? 'rgba(255,255,255,0.22)' : 'rgba(137,196,220,0.12)')
-      .attr('stroke', pulseColor)
-      .attr('stroke-width', isClick ? 3.0 : 2.0)
-      .attr('opacity', isClick ? 1.0 : 0.85);
-
-    pulse.transition()
-      .duration(isClick ? 700 : 480)
-      .ease(d3.easeQuadOut)
-      .attr('r', baseRadius + (isClick ? 44 : 26))
-      .attr('stroke-width', 0.4)
-      .attr('opacity', 0)
-      .remove();
-
-    if (isClick) {
-      // Secondary trailing ripple
-      const pulse2 = pulseGroup.append('circle')
-        .attr('cx', targetX)
-        .attr('cy', targetY)
-        .attr('r', baseRadius)
-        .attr('fill', 'none')
-        .attr('stroke', '#ffffff')
-        .attr('stroke-width', 1.5)
-        .attr('opacity', 0.8);
-
-      pulse2.transition()
-        .delay(90)
-        .duration(650)
-        .ease(d3.easeQuadOut)
-        .attr('r', baseRadius + 60)
-        .attr('stroke-width', 0.2)
-        .attr('opacity', 0)
-        .remove();
-    }
-  }
 
   /* ── 6. DRAW SCENERY PER MODE ───────────────────────────────────────────── */
 
@@ -364,23 +318,6 @@
 
   recordScenery.append('circle').attr('cx', cx).attr('cy', cy).attr('r', outerR - 1)
     .attr('fill', 'none').attr('stroke', 'rgba(255,255,255,0.07)').attr('stroke-width', 1.5);
-
-  // Luminous Pantheon Benchmark Band (★ 9.0+ outer groove)
-  const pantheonRadius = rScale(9.0);
-  recordScenery.append('circle')
-    .attr('cx', cx).attr('cy', cy).attr('r', pantheonRadius)
-    .attr('fill', 'none')
-    .attr('stroke', 'var(--accent)')
-    .attr('stroke-width', 1.4)
-    .attr('stroke-dasharray', '5 4')
-    .attr('opacity', 0.5);
-
-  recordScenery.append('text')
-    .attr('x', cx).attr('y', cy - pantheonRadius - 6)
-    .attr('text-anchor', 'middle')
-    .attr('font-family', CF).attr('font-size', '9px').attr('font-weight', '700')
-    .attr('fill', 'var(--accent)').attr('letter-spacing', '0.14em')
-    .text('★ 9.0+ PANTHEON GROOVE (TOP 1.2% OF CINEMA)');
 
   // Center Label
   labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', innerR)
@@ -449,32 +386,6 @@
     .attr('font-family', CF).attr('font-size', '11px').attr('font-weight', '700')
     .attr('fill', '#999').attr('letter-spacing', '0.14em')
     .text('CHRONOLOGICAL WAVE · 1920 → 2020 (RATING ON Y-AXIS)');
-
-  // Golden Era Benchmark Pillars (1957, 1974, 1994)
-  const miracleYears = [
-    { yr: 1957, tag: "1957 SPIKE · 12 ANGRY MEN" },
-    { yr: 1974, tag: "1974 PEAK · GODFATHER II" },
-    { yr: 1994, tag: "1994 PEAK · SHAWSHANK & PULP FICTION" }
-  ];
-
-  miracleYears.forEach(m => {
-    const mx = timeX(m.yr);
-    timelineScenery.append('rect')
-      .attr('x', mx - 16).attr('y', topBarH + timePadY - 4)
-      .attr('width', 32).attr('height', canvasH - timePadY * 2 + 8)
-      .attr('fill', 'rgba(137, 196, 220, 0.04)')
-      .attr('stroke', 'rgba(137, 196, 220, 0.28)')
-      .attr('stroke-width', 0.8)
-      .attr('stroke-dasharray', '3 3')
-      .attr('rx', 2);
-
-    timelineScenery.append('text')
-      .attr('x', mx).attr('y', topBarH + timePadY + 12)
-      .attr('text-anchor', 'middle')
-      .attr('font-family', CF).attr('font-size', '8px').attr('font-weight', '700')
-      .attr('fill', 'var(--accent)').attr('letter-spacing', '0.08em')
-      .text(m.tag);
-  });
 
   // ── Critic vs Audience Galaxy Scenery ──
   const metaTicks = [40, 50, 60, 70, 80, 90, 100];
@@ -549,19 +460,6 @@
     .on('mouseout',  onDotOut)
     .on('click',     onDotClick);
 
-  // Initial Boot-up Choreography: concentric wave bloom (motion-choreographer skill)
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    dots
-      .attr('r', 0)
-      .attr('opacity', 0)
-      .transition()
-      .duration(650)
-      .delay(d => Math.min(500, ((d.rating - 7.6) / (9.3 - 7.6)) * 500))
-      .ease(d3.easeCubicOut)
-      .attr('r', d => getDotRadius(d))
-      .attr('opacity', 0.85);
-  }
-
   /* ── 8. COLOPHON & DECODE KEY ───────────────────────────────────────────── */
 
   const CF2 = "'Barlow Condensed', monospace";
@@ -609,27 +507,8 @@
       galaxyScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
     }
 
-    // Choreographed Motion System (motion-choreographer skill)
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const baseDuration = prefersReducedMotion ? 0 : 720;
-
-    dots.transition()
-      .duration(baseDuration)
-      .delay(d => {
-        if (prefersReducedMotion) return 0;
-        if (newMode === 'timeline') {
-          // Chronological wave cascade: left-to-right temporal domino ripple
-          return Math.max(0, Math.min(340, ((d.year - 1920) / (2020 - 1920)) * 340));
-        } else if (newMode === 'galaxy') {
-          // Consensus divergence ripple: consensus films first, polarising outliers blossom
-          const diff = Math.abs(d.rating * 10 - (d.ms || 75));
-          return Math.max(0, Math.min(320, (diff / 45) * 320));
-        } else {
-          // Concentric acoustic ripple: core to outer grooves
-          return Math.max(0, Math.min(320, ((d.rating - 7.6) / (9.3 - 7.6)) * 320));
-        }
-      })
-      .ease(newMode === 'timeline' ? d3.easeBackOut.overshoot(0.55) : d3.easeCubicOut)
+    // Animate all dots to new target coordinates AND refresh circle sizes
+    dots.transition().duration(850).ease(d3.easeCubicOut)
       .attr('cx', d => {
         if (newMode === 'record')   return (posRecord.get(d.id)   || { x: cx }).x;
         if (newMode === 'timeline') return (posTimeline.get(d.id) || { x: cx }).x;
@@ -646,52 +525,12 @@
 
     // Refresh decode key text per mode
     if (newMode === 'record') {
-      decodeKeyText.text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING · CLICK DOT FOR DOSSIER');
+      decodeKeyText.text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING');
     } else if (newMode === 'timeline') {
-      decodeKeyText.text('X = RELEASE YEAR (1920 → 2020) · Y = IMDb RATING (★ 7.6 → ★ 9.3) · SIZE = RATING · CLICK DOT FOR DOSSIER');
+      decodeKeyText.text('X = RELEASE YEAR (1920 → 2020) · Y = IMDb RATING (★ 7.6 → ★ 9.3) · SIZE = IMDb RATING');
     } else if (newMode === 'galaxy') {
-      decodeKeyText.text('X = METASCORE (CRITIC 40 → 100) · Y = IMDb (AUDIENCE 7.6 → 9.3) · SIZE = RATING · CLICK DOT FOR DOSSIER');
+      decodeKeyText.text('X = METASCORE (CRITIC 40 → 100) · Y = IMDb (AUDIENCE 7.6 → 9.3) · SIZE = IMDb RATING');
     }
-
-    updateNarrativeLead();
-  }
-
-  /* ── 9b. EDITORIAL NARRATIVE LEAD (chart-narrative-crafter skill) ───────── */
-
-  const narrativeTextEl = document.getElementById('narrative-text');
-
-  const MODE_NARRATIVES = {
-    record: 'RADIAL RATING · ★ 9.3 peak to ★ 7.6 baseline · Only 12 of 1,000 films surpass ★9.0, while 74% congregate in the 7.6–8.1 band.',
-    timeline: 'CHRONOLOGICAL WAVE · Modern eras (1990s–2000s) dominate in volume, but the 1950s–1970s hold the steepest concentration of top-tier ratings.',
-    galaxy: 'CRITIC VS AUDIENCE · Audience ratings hold tightly between ★7.6–9.3, while Metascores diverge widely from 40 to 100.'
-  };
-
-  function updateNarrativeLead() {
-    if (!narrativeTextEl) return;
-    const activeFilms = films.filter(isFilmActive);
-    const count = activeFilms.length;
-
-    let narrative = '';
-
-    if (searchQuery) {
-      const topFilm = activeFilms.slice().sort((a, b) => b.rating - a.rating)[0];
-      narrative = `SEARCH "${searchQuery.toUpperCase()}" · ${count} film${count === 1 ? '' : 's'} matched${topFilm ? ` · Peak: ${topFilm.t} (★ ${Number(topFilm.r).toFixed(1)})` : ''}`;
-    } else if (activeGenres.size > 0) {
-      const genreNames = Array.from(activeGenres).join(', ').toUpperCase();
-      const topFilm = activeFilms.slice().sort((a, b) => b.rating - a.rating)[0];
-      narrative = `${genreNames} · ${count} films (${((count / 1000) * 100).toFixed(1)}% of all-time catalog)${topFilm ? ` · Top rated: ${topFilm.t} (★ ${Number(topFilm.r).toFixed(1)})` : ''}`;
-    } else if (activeDecades.size > 0) {
-      const decNames = Array.from(activeDecades).map(d => d + 's').join(', ');
-      const topFilm = activeFilms.slice().sort((a, b) => b.rating - a.rating)[0];
-      narrative = `${decNames.toUpperCase()} · ${count} films${topFilm ? ` · Highest: ${topFilm.t} (★ ${Number(topFilm.r).toFixed(1)})` : ''}`;
-    } else if (activeRuntimes.size > 0) {
-      const avgR = (activeFilms.reduce((acc, f) => acc + f.rating, 0) / (count || 1)).toFixed(2);
-      narrative = `RUNTIME FILTERED · ${count} films · Average rating: ★ ${avgR}`;
-    } else {
-      narrative = MODE_NARRATIVES[currentMode] || MODE_NARRATIVES.record;
-    }
-
-    narrativeTextEl.textContent = narrative;
   }
 
   document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -762,9 +601,6 @@
     if (!isFilmActive(d)) return;
     hoveredDotEl = this;
     hoveredFilm  = d;
-
-    // Motion Choreographer: Sonic hover pulse
-    emitSonicPulse(+this.getAttribute('cx'), +this.getAttribute('cy'), getDotRadius(d), getDotFill(d));
 
     // No raise(), no radius change, no stroke — just glow
     d3.select(this)
@@ -839,10 +675,6 @@
     if (selectedDot) d3.select(selectedDot).classed('selected', false);
     selectedDot = this;
     d3.select(this).classed('selected', true);
-
-    // Motion Choreographer: Sonic shockwave pulse on click
-    emitSonicPulse(+this.getAttribute('cx'), +this.getAttribute('cy'), getDotRadius(d), '#ffffff', true);
-
     drawConstellations(d);
     openOverlay(d);
   }
@@ -966,10 +798,7 @@
       .classed('dimmed',        d => !isFilmActive(d))
       .classed('search-match',  d => searchQuery && isFilmSearchMatch(d, searchQuery));
 
-    const isAnyFilterActive = searchQuery || isGenreActive || activeDecades.size > 0 || activeRuntimes.size > 0;
-    dots.transition().duration(280)
-      .delay(d => (isAnyFilterActive && isFilmActive(d)) ? Math.min(160, (9.3 - d.rating) * 80) : 0)
-      .ease(d3.easeCubicOut)
+    dots.transition().duration(240)
       .attr('opacity', d => getDotOpacity(d))
       .attr('fill',    d => getDotFill(d));
 
@@ -984,9 +813,6 @@
     } else {
       searchCountEl.textContent = '';
     }
-
-    // Dynamic narrative takeaway update
-    updateNarrativeLead();
   }
 
   /* ── 14. OMNI SEARCH INPUT EVENT ────────────────────────────────────────── */
@@ -1099,8 +925,5 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
-
-  // Initialize narrative takeaway banner
-  updateNarrativeLead();
 
 })();

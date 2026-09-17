@@ -41,49 +41,6 @@ html, body {
   -webkit-backdrop-filter: blur(10px);
 }
 
-/* ── Editorial Narrative Lead (chart-narrative-crafter skill) ── */
-#narrative-lead {
-  position: fixed;
-  top: 58px;
-  left: 24px;
-  z-index: 450;
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  background: rgba(14, 14, 14, 0.88);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  padding: 5px 12px;
-  border-radius: 3px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-  pointer-events: none;
-  max-width: min(740px, calc(100vw - 280px));
-}
-
-.narrative-badge {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  color: #0A0A0A;
-  background: var(--accent);
-  padding: 2px 5px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-#narrative-text {
-  font-size: 11px;
-  letter-spacing: 0.06em;
-  color: #D4D4D4;
-  font-family: var(--font);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-weight: 500;
-}
-
 .brand {
   display: flex;
   align-items: baseline;
@@ -232,8 +189,6 @@ html, body {
 .galaxy-scenery *,
 .constellation-layer,
 .constellation-layer *,
-.pulse-layer,
-.pulse-layer *,
 .label-group,
 .label-group * {
   pointer-events: none !important;
