@@ -936,50 +936,50 @@
   const DOC_CHAPTERS = [
     {
       id: 'ch1',
-      badge: 'CHAPTER 1 OF 5 · ORIGINS',
+      badge: 'CHAPTER 1 OF 5 \u00b7 ORIGINS',
       title: 'The Silent Pioneers',
-      body: '17 films from the 1920s–30s earned Top 1000 status — each one foundational to every genre that followed.',
-      stat: '★ AVG 8.1 · 1920s–30s · 17 FILMS',
+      body: '17 films from the 1920s-30s earned Top 1000 status — each one foundational to every genre that followed.',
+      stat: '\u2605 AVG 8.1 \u00b7 1920s-30s \u00b7 17 FILMS',
       mode: 'record',
       decadeFilter: '1920',
       duration: 10000
     },
     {
       id: 'ch2',
-      badge: 'CHAPTER 2 OF 5 · THE GOLDEN AGE',
-      title: 'Hollywood's Unbroken Streak',
-      body: 'The 1940s–50s produced 112 top-rated films — the highest density of critically enduring classics per decade.',
-      stat: '★ AVG 8.2 · 1940s–50s · 112 FILMS',
+      badge: 'CHAPTER 2 OF 5 \u00b7 THE GOLDEN AGE',
+      title: "Hollywood's Unbroken Streak",
+      body: 'The 1940s-50s produced 112 top-rated films — the highest density of critically enduring classics per decade.',
+      stat: '\u2605 AVG 8.2 \u00b7 1940s-50s \u00b7 112 FILMS',
       mode: 'record',
       decadeFilter: '1940',
       duration: 10000
     },
     {
       id: 'ch3',
-      badge: 'CHAPTER 3 OF 5 · REVOLUTION',
+      badge: 'CHAPTER 3 OF 5 \u00b7 REVOLUTION',
       title: 'The 1970s New Hollywood Peak',
-      body: 'Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith — the 60s–70s yield the highest average rating in the dataset.',
-      stat: '★ AVG 8.3 · 1960s–70s · 184 FILMS',
+      body: "Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith — the 60s-70s yield the highest average rating in the dataset.",
+      stat: '\u2605 AVG 8.3 \u00b7 1960s-70s \u00b7 184 FILMS',
       mode: 'record',
       decadeFilter: '1960',
       duration: 10000
     },
     {
       id: 'ch4',
-      badge: 'CHAPTER 4 OF 5 · THE 1994 MIRACLE',
+      badge: 'CHAPTER 4 OF 5 \u00b7 THE 1994 MIRACLE',
       title: 'One Year Rewrote the Canon',
-      body: 'The 1980s–90s produced 404 films — the largest era cohort — anchored by Shawshank, Pulp Fiction, and Forrest Gump all landing in a single year.',
-      stat: '★ AVG 8.1 · 1980s–90s · 404 FILMS',
+      body: 'The 1980s-90s produced 404 films — the largest era cohort — anchored by Shawshank, Pulp Fiction, and Forrest Gump all landing in a single year.',
+      stat: '\u2605 AVG 8.1 \u00b7 1980s-90s \u00b7 404 FILMS',
       mode: 'timeline',
       decadeFilter: '1980',
       duration: 10000
     },
     {
       id: 'ch5',
-      badge: 'CHAPTER 5 OF 5 · THE GLOBAL WAVE',
+      badge: 'CHAPTER 5 OF 5 \u00b7 THE GLOBAL WAVE',
       title: 'Critics vs. Audiences: The Great Divide',
-      body: 'Modern cinema widens the gap: films with Metascore above 90 often sit below ★8.5 on IMDb, revealing two completely different consensus systems.',
-      stat: 'METASCORE 90+ ≠ IMDb 9.0+ · SEE GALAXY VIEW',
+      body: 'Modern cinema widens the gap: films with Metascore above 90 often sit below 8.5 on IMDb, revealing two completely different consensus systems.',
+      stat: 'METASCORE 90+ vs IMDb 9.0+ \u00b7 SEE GALAXY VIEW',
       mode: 'galaxy',
       decadeFilter: null,
       duration: 11000
@@ -1085,8 +1085,13 @@
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
 
-    // Switch visualization mode
-    switchMode(ch.mode);
+    // Switch visualization mode (bypass same-mode guard for doc chapters)
+    if (ch.mode !== currentMode) {
+      switchMode(ch.mode);
+    } else {
+      // Same mode — still need to clear constellations and fire applyFilters properly
+      clearConstellations();
+    }
 
     // Small delay to let mode transition settle, then apply focus
     setTimeout(() => {
