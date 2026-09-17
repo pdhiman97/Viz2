@@ -36,6 +36,12 @@
         <span class="mode-text">CRITIC VS AUDIENCE</span>
       </button>
     </nav>
+ 
+    <!-- Theme Polarity Harmonizer: Light / Dark Mode Toggle -->
+    <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle light and dark mode" title="Toggle Light / Dark Mode">
+      <span id="theme-toggle-icon">☀️</span>
+      <span id="theme-toggle-label">LIGHT</span>
+    </button>
 
     <!-- Omni Search Bar -->
     <div id="search-box">
@@ -120,6 +126,37 @@
       </div>
     </div>
   </aside>
+
+  <!-- ── DATA DOCUMENTARY: Controls & Scrubber ── -->
+  <div id="doc-controls-wrap">
+    <button id="doc-play-btn" aria-label="Play or pause tour" title="Play or Pause Story">
+      <span id="doc-play-icon">▶</span>
+      <span id="doc-play-label">PLAY STORY</span>
+    </button>
+    <button id="doc-stop-btn" aria-label="Stop tour" title="Stop and reset tour" style="display: none;">
+      <span id="doc-stop-icon">⏹</span>
+      <span id="doc-stop-label">STOP</span>
+    </button>
+    <button id="doc-sound-btn" aria-label="Toggle sound" title="Toggle ambient music">
+      <span id="doc-sound-icon">🔊</span>
+    </button>
+  </div>
+
+  <!-- ── DATA DOCUMENTARY: Segmented Chapter Scrubber Bar ── -->
+  <div id="doc-scrubber" aria-hidden="true">
+    <div id="doc-segments-container"></div>
+  </div>
+
+  <!-- ── DATA DOCUMENTARY: Floating Callout Card with Film Spotlights ── -->
+  <div id="doc-callout" aria-live="polite" aria-hidden="true">
+    <div id="doc-callout-inner">
+      <div id="doc-chapter-badge"></div>
+      <div id="doc-callout-title"></div>
+      <div id="doc-callout-body"></div>
+      <div id="doc-callout-stat"></div>
+      <div id="doc-spotlights" class="doc-spotlights"></div>
+    </div>
+  </div>
 
 </div>
 

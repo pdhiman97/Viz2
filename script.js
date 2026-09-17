@@ -98,10 +98,10 @@
       grooveOuter: 'rgba(15, 23, 42, 0.12)',
       centerRing: 'rgba(15, 23, 42, 0.06)',
       centerBorder: '#E2E8F0',
-      centerTitle: '#1E293B',
-      centerSub: '#475569',
-      centerCount: '#334155',
-      centerHint: '#64748B'
+      centerTitle: '#2D3748',
+      centerSub: '#718096',
+      centerCount: '#4A5568',
+      centerHint: '#A0AEC0'
     }
   };
 
@@ -276,15 +276,16 @@
   });
 
   // ── Mode 2: Timeline Wave Coordinates ──
-  const timePadX = 64;
-  const timePadY = 60;
+  const timePadX = 72;
+  const timePadYTop = 55;
+  const timePadYBottom = 88;
   const timeX = d3.scaleLinear()
     .domain([1920, 2020])
     .range([timePadX, canvasW - timePadX]);
 
   const timeY = d3.scaleLinear()
     .domain([7.6, 9.3])
-    .range([topBarH + canvasH - timePadY, topBarH + timePadY]);
+    .range([topBarH + canvasH - timePadYBottom, topBarH + timePadYTop]);
 
   // Jitter for timeline clusters
   const byYearRating = d3.group(films, d => `${d.y || 1995}_${d.rating}`);
@@ -304,15 +305,16 @@
   });
 
   // ── Mode 3: Critic vs Audience Galaxy Coordinates ──
-  const galPadX = 70;
-  const galPadY = 65;
+  const galPadX = 75;
+  const galPadYTop = 55;
+  const galPadYBottom = 88;
   const galX = d3.scaleLinear()
     .domain([40, 100])
     .range([galPadX, canvasW - galPadX]);
 
   const galY = d3.scaleLinear()
     .domain([7.6, 9.3])
-    .range([topBarH + canvasH - galPadY, topBarH + galPadY]);
+    .range([topBarH + canvasH - galPadYBottom, topBarH + galPadYTop]);
 
   const byScorePair = d3.group(films, d => `${d.ms || 70}_${d.rating}`);
   const posGalaxy = new Map();
@@ -426,12 +428,12 @@
   decades.forEach(yr => {
     const xPos = timeX(yr);
     timelineScenery.append('line')
-      .attr('x1', xPos).attr('y1', topBarH + timePadY - 10)
-      .attr('x2', xPos).attr('y2', topBarH + canvasH - timePadY + 10)
+      .attr('x1', xPos).attr('y1', topBarH + timePadYTop - 8)
+      .attr('x2', xPos).attr('y2', topBarH + canvasH - timePadYBottom + 8)
       .attr('class', 'axis-guide');
 
     timelineScenery.append('text')
-      .attr('x', xPos).attr('y', topBarH + canvasH - timePadY + 26)
+      .attr('x', xPos).attr('y', topBarH + canvasH - timePadYBottom + 22)
       .attr('text-anchor', 'middle').attr('class', 'axis-label')
       .text(yr);
   });
@@ -451,9 +453,8 @@
   });
 
   timelineScenery.append('text')
-    .attr('x', timePadX).attr('y', topBarH + timePadY - 24)
-    .attr('font-family', CF).attr('font-size', '11px').attr('font-weight', '700')
-    .attr('fill', '#999').attr('letter-spacing', '0.14em')
+    .attr('x', timePadX).attr('y', topBarH + timePadYTop - 20)
+    .attr('class', 'quadrant-label')
     .text('CHRONOLOGICAL WAVE · 1920 → 2020 (RATING ON Y-AXIS)');
 
   // ── Critic vs Audience Galaxy Scenery ──
@@ -461,12 +462,12 @@
   metaTicks.forEach(ms => {
     const xPos = galX(ms);
     galaxyScenery.append('line')
-      .attr('x1', xPos).attr('y1', topBarH + galPadY - 10)
-      .attr('x2', xPos).attr('y2', topBarH + canvasH - galPadY + 10)
+      .attr('x1', xPos).attr('y1', topBarH + galPadYTop - 8)
+      .attr('x2', xPos).attr('y2', topBarH + canvasH - galPadYBottom + 8)
       .attr('class', 'axis-guide');
 
     galaxyScenery.append('text')
-      .attr('x', xPos).attr('y', topBarH + canvasH - galPadY + 26)
+      .attr('x', xPos).attr('y', topBarH + canvasH - galPadYBottom + 22)
       .attr('text-anchor', 'middle').attr('class', 'axis-label')
       .text(`M ${ms}`);
   });
@@ -486,17 +487,17 @@
 
   // Quadrant Labels
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + galPadY + 16)
+    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + galPadYTop + 16)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
     .text('UNIVERSAL MASTERPIECES (CRITIC 100 + AUDIENCE 9.0+)');
 
   galaxyScenery.append('text')
-    .attr('x', galPadX + 10).attr('y', topBarH + galPadY + 16)
+    .attr('x', galPadX + 10).attr('y', topBarH + galPadYTop + 16)
     .attr('text-anchor', 'start').attr('class', 'quadrant-label')
     .text('AUDIENCE CULT FAVORITES (HIGH RATING / MODEST CRITIC)');
 
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + canvasH - galPadY - 14)
+    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + canvasH - galPadYBottom - 14)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
     .text('CRITICAL DARLINGS (HIGH METASCORE)');
 
@@ -534,15 +535,17 @@
 
   const CF2 = "'Barlow Condensed', monospace";
 
-  svg.append('text').attr('x', 24).attr('y', H - 18)
+  const colophonText = svg.append('text').attr('x', 24).attr('y', H - 16)
+    .attr('class', 'viz-colophon')
     .attr('font-size', '10px').attr('font-family', CF2)
-    .attr('fill', '#777777').attr('letter-spacing', '0.14em')
+    .attr('letter-spacing', '0.14em')
     .text('ONE RECORD · 1000 FILMS · 1920–2020 · IMDb TOP 1000');
 
-  const decodeKeyText = svg.append('text').attr('x', 24).attr('y', H - 32)
+  const decodeKeyText = svg.append('text').attr('x', 24).attr('y', H - 30)
     .attr('id', 'decode-key-text')
+    .attr('class', 'viz-decode-key')
     .attr('font-size', '9px').attr('font-family', CF2)
-    .attr('fill', '#777777').attr('letter-spacing', '0.12em')
+    .attr('letter-spacing', '0.12em')
     .text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING');
 
   /* ── 9. MODE SWITCHER LOGIC ─────────────────────────────────────────────── */

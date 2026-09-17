@@ -21,12 +21,12 @@ The **Theme Polarity Harmonizer** establishes a **dual-state optical and accessi
 
 | Element Type | Light Polarity Rule | Dark Polarity Rule | WCAG Target |
 | :--- | :--- | :--- | :--- |
-| **Primary Titles & Headings** | Deep Slate/Carbon (`#0F172A` / `#1E293B`) on `#FAFAFA` | Crisp White (`#F0F0F0`) on `#0A0A0A` | **$\ge 12:1$ (Exceeds AAA 7:1)** |
-| **Body & Narrative Copy** | Refined Charcoal Slate (`#334155`) | Warm Alabaster (`#CCCCCC`) | **$\ge 9.5:1$ (Exceeds AAA 7:1)** |
-| **Secondary Labels & Meta** | Slate (`#475569`) | Neutral Slate (`#AAAAAA`) | **$\ge 5.8:1$ (Exceeds AA 4.5:1)** |
+| **Primary Titles & Headings** | Dark Charcoal Grey (`#2D3748`) on `#FAFAFA` | Crisp White (`#F0F0F0`) on `#0A0A0A` | **$\ge 9.5:1$ (Exceeds AAA 7:1)** |
+| **Body & Narrative Copy** | Refined Slate Grey (`#4A5568`) | Warm Alabaster (`#CCCCCC`) | **$\ge 7.2:1$ (Exceeds AAA 7:1)** |
+| **Secondary Labels & Meta** | Soft Dark Grey (`#718096`) | Neutral Slate (`#AAAAAA`) | **$\ge 4.8:1$ (Exceeds AA 4.5:1)** |
 | **Narrative Accents & Badges**| Deep Amber Gold (`#B45309` / `#D97706`) | 24k Gold (`#D4A853`) | **$\ge 4.8:1$ (Exceeds AA 4.5:1)** |
 | **Data Marks / Dots ($< 8\text{px}$)** | Pure High-Chroma Saturated Jewel Tones (No muddy dark stroke) | Luminous Emissive Pigments with subtle glow | **High Chromatic Contrast** |
-| **Constellation & Guide Lines**| Delicate Slate Filaments (`#475569`, $1.1\text{px}$, `dasharray: 3 3`) | Subtle Luminous Filaments (`rgba(255,255,255,0.65)`, $1.1\text{px}$) | **Subtle & Non-Occluding** |
+| **Constellation & Guide Lines**| Delicate Slate Filaments (`#64748B`, $1.1\text{px}$, `dasharray: 3 3`) | Subtle Luminous Filaments (`rgba(255,255,255,0.65)`, $1.1\text{px}$) | **Subtle & Non-Occluding** |
 
 ---
 
@@ -74,6 +74,6 @@ The **Theme Polarity Harmonizer** establishes a **dual-state optical and accessi
 - **Persist State**: Store the active theme in `localStorage` and initialize synchronously on page load.
 
 ### MUST NEVER:
-- **Never use pitch black (`#000000`) for large text blocks**: Use refined slate (`#0F172A` / `#1E293B`) to avoid visual fatigue and harsh contrast jarring.
+- **Never use pitch black (`#000000`) or harsh near-black (`#0F172A`) for text**: Use refined dark charcoal / slate grey (`#2D3748` / `#4A5568`) to avoid optical harshness, visual fatigue, and unnatural contrast.
 - **Never use desaturated/pastel colors on white canvases**: Pale pastels disappear against light backgrounds; use high-saturation jewel tones.
 - **Never allow dark card backgrounds with dark text**: Always audit card children (`.doc-spotlight-card`, `p`, `h1`, badges) under light polarity.

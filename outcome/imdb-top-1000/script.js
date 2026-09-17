@@ -10,17 +10,107 @@
 (function () {
   'use strict';
 
-  /* ── 1. COLOUR PALETTES ─────────────────────────────────────────────────── */
+  /* ── 1. THEME POLARITY HARMONIZER (DARK / LIGHT) ───────────────────────── */
 
-  const DECADE_COLOR = {
-    '1920': '#C8A96A', '1930': '#C8A96A',
-    '1940': '#7AAF8E', '1950': '#7AAF8E',
-    '1960': '#D4734A', '1970': '#D4734A',
-    '1980': '#9B72CF', '1990': '#9B72CF',
-    '2000': '#89C4DC', '2010': '#89C4DC',
-    '2020': '#E2E2E2',
-    'unknown': '#4A4A4A'
+  const THEMES = {
+    dark: {
+      id: 'dark',
+      name: 'Dark Mode',
+      decades: {
+        '1920': '#C8A96A', '1930': '#C8A96A',
+        '1940': '#7AAF8E', '1950': '#7AAF8E',
+        '1960': '#D4734A', '1970': '#D4734A',
+        '1980': '#9B72CF', '1990': '#9B72CF',
+        '2000': '#89C4DC', '2010': '#89C4DC',
+        '2020': '#E2E2E2', 'unknown': '#4A4A4A'
+      },
+      genres: {
+        'Drama':     '#D4A853',
+        'Action':    '#E07030',
+        'Comedy':    '#7DC060',
+        'Crime':     '#C05050',
+        'Biography': '#60A0C0',
+        'Animation': '#E0C840',
+        'Adventure': '#50C090',
+        'Mystery':   '#9880C0',
+        'Horror':    '#A03030',
+        'Western':   '#C08040',
+        'Film-Noir': '#B0A07A',
+        'Fantasy':   '#A060D0',
+        'Family':    '#80D090',
+        'Thriller':  '#8060B0',
+        'Sci-Fi':    '#40B0D0',
+        'Romance':   '#D06080',
+        'History':   '#C09050',
+        'War':       '#708060',
+        'Music':     '#E050A0',
+        'Musical':   '#E060D0',
+        'Sport':     '#60C050'
+      },
+      vinylStops: ['#1B1B1B', '#111111', '#080808'],
+      labelStops: ['#272727', '#181818'],
+      grooveStroke: 'rgba(255, 255, 255, 0.035)',
+      grooveOuter: 'rgba(255, 255, 255, 0.07)',
+      centerRing: 'rgba(255, 255, 255, 0.04)',
+      centerBorder: '#2E2E2E',
+      centerTitle: '#F0F0F0',
+      centerSub: '#999999',
+      centerCount: '#AAAAAA',
+      centerHint: '#777777'
+    },
+    light: {
+      id: 'light',
+      name: 'Light Mode',
+      decades: {
+        '1920': '#EA580C', '1930': '#EA580C',
+        '1940': '#0D9488', '1950': '#0D9488',
+        '1960': '#E11D48', '1970': '#E11D48',
+        '1980': '#7C3AED', '1990': '#7C3AED',
+        '2000': '#0284C7', '2010': '#0284C7',
+        '2020': '#059669', 'unknown': '#475569'
+      },
+      genres: {
+        'Drama':     '#D97706',
+        'Action':    '#EA580C',
+        'Comedy':    '#16A34A',
+        'Crime':     '#DC2626',
+        'Biography': '#0284C7',
+        'Animation': '#CA8A04',
+        'Adventure': '#0D9488',
+        'Mystery':   '#9333EA',
+        'Horror':    '#B91C1C',
+        'Western':   '#C2410C',
+        'Film-Noir': '#334155',
+        'Fantasy':   '#C026D3',
+        'Family':    '#10B981',
+        'Thriller':  '#7E22CE',
+        'Sci-Fi':    '#0891B2',
+        'Romance':   '#E11D48',
+        'History':   '#B45309',
+        'War':       '#4D7C0F',
+        'Music':     '#DB2777',
+        'Musical':   '#A21CAF',
+        'Sport':     '#65A30D'
+      },
+      vinylStops: ['#FFFFFF', '#F8FAFC', '#F1F5F9'],
+      labelStops: ['#FFFFFF', '#F8FAFC'],
+      grooveStroke: 'rgba(15, 23, 42, 0.06)',
+      grooveOuter: 'rgba(15, 23, 42, 0.12)',
+      centerRing: 'rgba(15, 23, 42, 0.06)',
+      centerBorder: '#E2E8F0',
+      centerTitle: '#2D3748',
+      centerSub: '#718096',
+      centerCount: '#4A5568',
+      centerHint: '#A0AEC0'
+    }
   };
+
+  let currentTheme = (function() {
+    try { return localStorage.getItem('viz_theme') || 'dark'; } catch (e) { return 'dark'; }
+  })();
+
+  const DECADE_COLOR = THEMES[currentTheme]?.decades || THEMES.dark.decades;
+  const GENRE_COLOR  = THEMES[currentTheme]?.genres  || THEMES.dark.genres;
 
   const DECADE_GROUP = {
     '1920': '1920', '1930': '1920',
@@ -29,30 +119,6 @@
     '1980': '1980', '1990': '1980',
     '2000': '2000', '2010': '2000',
     '2020': '2020', 'unknown': 'unknown'
-  };
-
-  const GENRE_COLOR = {
-    'Drama':     '#D4A853',
-    'Action':    '#E07030',
-    'Comedy':    '#7DC060',
-    'Crime':     '#C05050',
-    'Biography': '#60A0C0',
-    'Animation': '#E0C840',
-    'Adventure': '#50C090',
-    'Mystery':   '#9880C0',
-    'Horror':    '#A03030',
-    'Western':   '#C08040',
-    'Film-Noir': '#B0A07A',
-    'Fantasy':   '#A060D0',
-    'Family':    '#80D090',
-    'Thriller':  '#8060B0',
-    'Sci-Fi':    '#40B0D0',
-    'Romance':   '#D06080',
-    'History':   '#C09050',
-    'War':       '#708060',
-    'Music':     '#E050A0',
-    'Musical':   '#E060D0',
-    'Sport':     '#60C050'
   };
 
   /* ── 2. VIEWPORT & GEOMETRY ─────────────────────────────────────────────── */
@@ -210,15 +276,16 @@
   });
 
   // ── Mode 2: Timeline Wave Coordinates ──
-  const timePadX = 64;
-  const timePadY = 60;
+  const timePadX = 72;
+  const timePadYTop = 55;
+  const timePadYBottom = 88;
   const timeX = d3.scaleLinear()
     .domain([1920, 2020])
     .range([timePadX, canvasW - timePadX]);
 
   const timeY = d3.scaleLinear()
     .domain([7.6, 9.3])
-    .range([topBarH + canvasH - timePadY, topBarH + timePadY]);
+    .range([topBarH + canvasH - timePadYBottom, topBarH + timePadYTop]);
 
   // Jitter for timeline clusters
   const byYearRating = d3.group(films, d => `${d.y || 1995}_${d.rating}`);
@@ -238,15 +305,16 @@
   });
 
   // ── Mode 3: Critic vs Audience Galaxy Coordinates ──
-  const galPadX = 70;
-  const galPadY = 65;
+  const galPadX = 75;
+  const galPadYTop = 55;
+  const galPadYBottom = 88;
   const galX = d3.scaleLinear()
     .domain([40, 100])
     .range([galPadX, canvasW - galPadX]);
 
   const galY = d3.scaleLinear()
     .domain([7.6, 9.3])
-    .range([topBarH + canvasH - galPadY, topBarH + galPadY]);
+    .range([topBarH + canvasH - galPadYBottom, topBarH + galPadYTop]);
 
   const byScorePair = d3.group(films, d => `${d.ms || 70}_${d.rating}`);
   const posGalaxy = new Map();
@@ -276,15 +344,15 @@
   // Vinyl body gradient
   const vg = defs.append('radialGradient').attr('id', 'vinyl-grad')
     .attr('cx', '50%').attr('cy', '50%').attr('r', '50%');
-  vg.append('stop').attr('offset', '0%').attr('stop-color', '#1B1B1B');
-  vg.append('stop').attr('offset', '55%').attr('stop-color', '#111111');
-  vg.append('stop').attr('offset', '100%').attr('stop-color', '#080808');
+  const vgStop0 = vg.append('stop').attr('offset', '0%').attr('stop-color', '#1B1B1B');
+  const vgStop1 = vg.append('stop').attr('offset', '55%').attr('stop-color', '#111111');
+  const vgStop2 = vg.append('stop').attr('offset', '100%').attr('stop-color', '#080808');
 
   // Label radial gradient
   const lg = defs.append('radialGradient').attr('id', 'label-grad')
     .attr('cx', '50%').attr('cy', '50%').attr('r', '50%');
-  lg.append('stop').attr('offset', '0%').attr('stop-color', '#272727');
-  lg.append('stop').attr('offset', '100%').attr('stop-color', '#181818');
+  const lgStop0 = lg.append('stop').attr('offset', '0%').attr('stop-color', '#272727');
+  const lgStop1 = lg.append('stop').attr('offset', '100%').attr('stop-color', '#181818');
 
   // Glow filter for hovered dot
   const gf = defs.append('filter').attr('id', 'dot-glow')
@@ -300,30 +368,33 @@
   const galaxyScenery   = svg.append('g').attr('class', 'galaxy-scenery').style('display', 'none');
   const constellationG  = svg.append('g').attr('class', 'constellation-layer');
   const dotsGroup       = svg.append('g').attr('class', 'dots-group');
+  const spotlightG      = svg.append('g').attr('class', 'spotlight-layer');
   const labelG          = svg.append('g').attr('class', 'label-group');
 
   /* ── 6. DRAW SCENERY PER MODE ───────────────────────────────────────────── */
 
   // ── Vinyl Record Scenery ──
-  recordScenery.append('circle').attr('cx', cx).attr('cy', cy).attr('r', outerR)
+  const vinylDiscCircle = recordScenery.append('circle').attr('cx', cx).attr('cy', cy).attr('r', outerR)
     .attr('fill', 'url(#vinyl-grad)');
 
   for (let i = 0; i <= 30; i++) {
-    recordScenery.append('circle').attr('cx', cx).attr('cy', cy)
+    recordScenery.append('circle')
+      .attr('class', 'vinyl-groove-line')
+      .attr('cx', cx).attr('cy', cy)
       .attr('r', ringStart + i * ((ringEnd - ringStart) / 30))
       .attr('fill', 'none')
       .attr('stroke', 'rgba(255,255,255,0.035)')
       .attr('stroke-width', 0.6);
   }
 
-  recordScenery.append('circle').attr('cx', cx).attr('cy', cy).attr('r', outerR - 1)
+  const grooveOuterCircle = recordScenery.append('circle').attr('cx', cx).attr('cy', cy).attr('r', outerR - 1)
     .attr('fill', 'none').attr('stroke', 'rgba(255,255,255,0.07)').attr('stroke-width', 1.5);
 
   // Center Label
-  labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', innerR)
+  const centerLabelDisc = labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', innerR)
     .attr('fill', 'url(#label-grad)').attr('stroke', '#2E2E2E').attr('stroke-width', 1.2);
 
-  labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', innerR * 0.78)
+  const centerLabelRing = labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', innerR * 0.78)
     .attr('fill', 'none').attr('stroke', 'rgba(255,255,255,0.04)').attr('stroke-width', 0.8);
 
   labelG.append('circle').attr('cx', cx).attr('cy', cy).attr('r', 4.5)
@@ -332,12 +403,12 @@
   const CF = "'Barlow Condensed', monospace";
   const fU = innerR * 0.095;
 
-  labelG.append('text').attr('x', cx).attr('y', cy - innerR * 0.28)
+  const centerTitleText = labelG.append('text').attr('x', cx).attr('y', cy - innerR * 0.28)
     .attr('text-anchor', 'middle').attr('font-size', `${Math.max(18, fU * 1.85)}px`)
     .attr('font-weight', '700').attr('font-family', CF).attr('fill', '#F0F0F0').attr('letter-spacing', '0.14em')
     .text('ONE RECORD');
 
-  labelG.append('text').attr('x', cx).attr('y', cy - innerR * 0.08)
+  const centerSubText = labelG.append('text').attr('x', cx).attr('y', cy - innerR * 0.08)
     .attr('text-anchor', 'middle').attr('font-size', `${Math.max(8, fU * 0.76)}px`)
     .attr('font-family', CF).attr('fill', '#999999').attr('letter-spacing', '0.24em')
     .text('A CENTURY OF CINEMA');
@@ -347,7 +418,7 @@
     .attr('font-weight', '600').attr('font-family', CF).attr('fill', '#AAAAAA').attr('letter-spacing', '0.18em')
     .text('1000 FILMS');
 
-  labelG.append('text').attr('x', cx).attr('y', cy + innerR * 0.44)
+  const centerHintText = labelG.append('text').attr('x', cx).attr('y', cy + innerR * 0.44)
     .attr('text-anchor', 'middle').attr('font-size', `${Math.max(7, fU * 0.62)}px`)
     .attr('font-family', CF).attr('fill', '#777777').attr('letter-spacing', '0.18em')
     .text('HOVER OR CLICK A DOT');
@@ -357,12 +428,12 @@
   decades.forEach(yr => {
     const xPos = timeX(yr);
     timelineScenery.append('line')
-      .attr('x1', xPos).attr('y1', topBarH + timePadY - 10)
-      .attr('x2', xPos).attr('y2', topBarH + canvasH - timePadY + 10)
+      .attr('x1', xPos).attr('y1', topBarH + timePadYTop - 8)
+      .attr('x2', xPos).attr('y2', topBarH + canvasH - timePadYBottom + 8)
       .attr('class', 'axis-guide');
 
     timelineScenery.append('text')
-      .attr('x', xPos).attr('y', topBarH + canvasH - timePadY + 26)
+      .attr('x', xPos).attr('y', topBarH + canvasH - timePadYBottom + 22)
       .attr('text-anchor', 'middle').attr('class', 'axis-label')
       .text(yr);
   });
@@ -382,9 +453,8 @@
   });
 
   timelineScenery.append('text')
-    .attr('x', timePadX).attr('y', topBarH + timePadY - 24)
-    .attr('font-family', CF).attr('font-size', '11px').attr('font-weight', '700')
-    .attr('fill', '#999').attr('letter-spacing', '0.14em')
+    .attr('x', timePadX).attr('y', topBarH + timePadYTop - 20)
+    .attr('class', 'quadrant-label')
     .text('CHRONOLOGICAL WAVE · 1920 → 2020 (RATING ON Y-AXIS)');
 
   // ── Critic vs Audience Galaxy Scenery ──
@@ -392,12 +462,12 @@
   metaTicks.forEach(ms => {
     const xPos = galX(ms);
     galaxyScenery.append('line')
-      .attr('x1', xPos).attr('y1', topBarH + galPadY - 10)
-      .attr('x2', xPos).attr('y2', topBarH + canvasH - galPadY + 10)
+      .attr('x1', xPos).attr('y1', topBarH + galPadYTop - 8)
+      .attr('x2', xPos).attr('y2', topBarH + canvasH - galPadYBottom + 8)
       .attr('class', 'axis-guide');
 
     galaxyScenery.append('text')
-      .attr('x', xPos).attr('y', topBarH + canvasH - galPadY + 26)
+      .attr('x', xPos).attr('y', topBarH + canvasH - galPadYBottom + 22)
       .attr('text-anchor', 'middle').attr('class', 'axis-label')
       .text(`M ${ms}`);
   });
@@ -417,17 +487,17 @@
 
   // Quadrant Labels
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + galPadY + 16)
+    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + galPadYTop + 16)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
     .text('UNIVERSAL MASTERPIECES (CRITIC 100 + AUDIENCE 9.0+)');
 
   galaxyScenery.append('text')
-    .attr('x', galPadX + 10).attr('y', topBarH + galPadY + 16)
+    .attr('x', galPadX + 10).attr('y', topBarH + galPadYTop + 16)
     .attr('text-anchor', 'start').attr('class', 'quadrant-label')
     .text('AUDIENCE CULT FAVORITES (HIGH RATING / MODEST CRITIC)');
 
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + canvasH - galPadY - 14)
+    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + canvasH - galPadYBottom - 14)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
     .text('CRITICAL DARLINGS (HIGH METASCORE)');
 
@@ -437,6 +507,7 @@
     const pos = posRecord.get(f.id) || { x: cx, y: cy };
     return {
       ...f,
+      releaseYear: f.y,
       x: pos.x,
       y: pos.y,
       dotR: getDotRadius(f, 'record')
@@ -464,15 +535,17 @@
 
   const CF2 = "'Barlow Condensed', monospace";
 
-  svg.append('text').attr('x', 24).attr('y', H - 18)
+  const colophonText = svg.append('text').attr('x', 24).attr('y', H - 16)
+    .attr('class', 'viz-colophon')
     .attr('font-size', '10px').attr('font-family', CF2)
-    .attr('fill', '#777777').attr('letter-spacing', '0.14em')
+    .attr('letter-spacing', '0.14em')
     .text('ONE RECORD · 1000 FILMS · 1920–2020 · IMDb TOP 1000');
 
-  const decodeKeyText = svg.append('text').attr('x', 24).attr('y', H - 32)
+  const decodeKeyText = svg.append('text').attr('x', 24).attr('y', H - 30)
     .attr('id', 'decode-key-text')
+    .attr('class', 'viz-decode-key')
     .attr('font-size', '9px').attr('font-family', CF2)
-    .attr('fill', '#777777').attr('letter-spacing', '0.12em')
+    .attr('letter-spacing', '0.12em')
     .text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING');
 
   /* ── 9. MODE SWITCHER LOGIC ─────────────────────────────────────────────── */
@@ -491,24 +564,47 @@
 
     // Toggle scenery layers with smooth fade
     if (newMode === 'record') {
-      recordScenery.style('display', null).transition().duration(400).attr('opacity', 1);
-      labelG.style('display', null).transition().duration(400).attr('opacity', 1);
-      timelineScenery.transition().duration(250).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
-      galaxyScenery.transition().duration(250).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
+      recordScenery.style('display', null).transition('scenery').duration(400).attr('opacity', 1);
+      labelG.style('display', null).transition('scenery').duration(400).attr('opacity', 1);
+      timelineScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
+      galaxyScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
     } else if (newMode === 'timeline') {
-      recordScenery.transition().duration(250).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
-      labelG.transition().duration(250).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
-      timelineScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
-      galaxyScenery.transition().duration(250).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
+      recordScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
+      labelG.transition('scenery').duration(300).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
+      timelineScenery.style('display', null).attr('opacity', 0).transition('scenery').duration(400).attr('opacity', 1);
+      galaxyScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
     } else if (newMode === 'galaxy') {
-      recordScenery.transition().duration(250).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
-      labelG.transition().duration(250).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
-      timelineScenery.transition().duration(250).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
-      galaxyScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
+      recordScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
+      labelG.transition('scenery').duration(300).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
+      timelineScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
+      galaxyScenery.style('display', null).attr('opacity', 0).transition('scenery').duration(400).attr('opacity', 1);
     }
 
-    // Animate all dots to new target coordinates AND refresh circle sizes
-    dots.transition().duration(850).ease(d3.easeCubicOut)
+    // If in documentary mode, light up all dots during flight so travel path is visible
+    if (document.body.classList.contains('doc-playing')) {
+      document.body.classList.add('doc-moving');
+      setTimeout(() => {
+        document.body.classList.remove('doc-moving');
+      }, 1400);
+    }
+
+    // Animate all dots to new target coordinates with organic ripple delays
+    dots.transition('move')
+      .duration(1100)
+      .delay(d => {
+        if (newMode === 'record') {
+          const pt = posRecord.get(d.id) || { x: cx, y: cy };
+          return Math.min(260, Math.max(0, Math.hypot(pt.x - cx, pt.y - cy) * 0.45));
+        } else if (newMode === 'timeline') {
+          const yr = d.releaseYear || d.y || 1995;
+          return Math.min(280, Math.max(0, (yr - 1920) * 2.8));
+        } else if (newMode === 'galaxy') {
+          const ms = d.ms != null ? d.ms : 70;
+          return Math.min(280, Math.max(0, (ms - 40) * 3.8));
+        }
+        return 0;
+      })
+      .ease(d3.easeCubicInOut)
       .attr('cx', d => {
         if (newMode === 'record')   return (posRecord.get(d.id)   || { x: cx }).x;
         if (newMode === 'timeline') return (posTimeline.get(d.id) || { x: cx }).x;
@@ -571,10 +667,13 @@
 
       const pathData = `M ${p1.x} ${p1.y} Q ${mx} ${my} ${p2.x} ${p2.y}`;
 
+      const strokeColor = (currentTheme === 'light') ? (film.genreColor || '#0F172A') : (film.genreColor || '#89C4DC');
+
       const pathEl = constellationG.append('path')
         .attr('d', pathData)
         .attr('class', 'constellation-line')
-        .attr('stroke', film.genreColor || '#89C4DC');
+        .attr('stroke', strokeColor)
+        .style('stroke', strokeColor);
 
       // Animate draw-in
       const totalLen = pathEl.node().getTotalLength();
@@ -798,7 +897,7 @@
       .classed('dimmed',        d => !isFilmActive(d))
       .classed('search-match',  d => searchQuery && isFilmSearchMatch(d, searchQuery));
 
-    dots.transition().duration(240)
+    dots.transition('filter').duration(320)
       .attr('opacity', d => getDotOpacity(d))
       .attr('fill',    d => getDotFill(d));
 
@@ -894,6 +993,99 @@
     applyFilters();
   });
 
+  /* ── 17b. THEME POLARITY HARMONIZER (LIGHT / DARK) ───────────────────────── */
+
+  function setTheme(themeId, animate = true) {
+    const theme = THEMES[themeId] || THEMES.dark;
+    currentTheme = theme.id;
+
+    // 1. Update document root attribute
+    document.documentElement.setAttribute('data-theme', theme.id);
+
+    // 2. Update decade filter swatches (--dc)
+    document.querySelectorAll('#decade-filter .flt-btn[data-decade]').forEach(btn => {
+      const dec = btn.getAttribute('data-decade');
+      const c = theme.decades[dec] || '#888';
+      btn.style.setProperty('--dc', c);
+    });
+
+    // 3. Update genre filter swatches (--dc)
+    document.querySelectorAll('#genre-filter .genre-flt-btn[data-genre]').forEach(btn => {
+      const g = btn.getAttribute('data-genre');
+      const c = theme.genres[g] || '#888';
+      btn.style.setProperty('--dc', c);
+    });
+
+    // 4. Update data models
+    films.forEach(f => {
+      f.decadeColor = theme.decades[f.decade] || '#4A4A4A';
+      f.genreColor  = theme.genres[f.primaryGenre] || '#777777';
+    });
+
+    // 5. Update SVG Vinyl & Center Label Scenery
+    if (vgStop0) {
+      vgStop0.attr('stop-color', theme.vinylStops[0]);
+      vgStop1.attr('stop-color', theme.vinylStops[1]);
+      vgStop2.attr('stop-color', theme.vinylStops[2]);
+    }
+    if (lgStop0) {
+      lgStop0.attr('stop-color', theme.labelStops[0]);
+      lgStop1.attr('stop-color', theme.labelStops[1]);
+    }
+    if (centerLabelDisc)   centerLabelDisc.attr('stroke', theme.centerBorder);
+    if (centerLabelRing)   centerLabelRing.attr('stroke', theme.centerRing);
+    if (grooveOuterCircle) grooveOuterCircle.attr('stroke', theme.grooveOuter);
+    svg.selectAll('.vinyl-groove-line').attr('stroke', theme.grooveStroke);
+
+    if (centerTitleText) centerTitleText.attr('fill', theme.centerTitle);
+    if (centerSubText)   centerSubText.attr('fill', theme.centerSub);
+    if (countEl)         countEl.attr('fill', theme.centerCount);
+    if (centerHintText)  centerHintText.attr('fill', theme.centerHint);
+
+    // 6. Update dots colors on canvas
+    if (dots) {
+      if (animate) {
+        dots.transition('theme-color').duration(400)
+          .attr('fill', d => getDotFill(d));
+      } else {
+        dots.attr('fill', d => getDotFill(d));
+      }
+    }
+
+    // 7. Update Theme Toggle Button UI
+    const themeToggleBtn   = document.getElementById('theme-toggle-btn');
+    const themeToggleIcon  = document.getElementById('theme-toggle-icon');
+    const themeToggleLabel = document.getElementById('theme-toggle-label');
+
+    if (themeToggleBtn && themeToggleIcon && themeToggleLabel) {
+      if (theme.id === 'light') {
+        themeToggleIcon.textContent = '🌙';
+        themeToggleLabel.textContent = 'DARK';
+        themeToggleBtn.setAttribute('title', 'Switch to Dark Mode');
+      } else {
+        themeToggleIcon.textContent = '☀️';
+        themeToggleLabel.textContent = 'LIGHT';
+        themeToggleBtn.setAttribute('title', 'Switch to Light Mode');
+      }
+    }
+
+    try {
+      localStorage.setItem('viz_theme', theme.id);
+    } catch (e) {}
+  }
+
+  // Theme Toggle Button Event Listener
+  const themeToggleBtn = document.getElementById('theme-toggle-btn');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const nextTheme = (currentTheme === 'light') ? 'dark' : 'light';
+      setTheme(nextTheme, true);
+    });
+  }
+
+  // Initialize theme on start
+  setTheme(currentTheme, false);
+
   /* ── 18. KEYBOARD SHORTCUTS ─────────────────────────────────────────────── */
 
   document.addEventListener('keydown', e => {
@@ -925,5 +1117,748 @@
       .replace(/&/g, '&amp;').replace(/</g, '&lt;')
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════════
+     DATA DOCUMENTARY — Guided Story Tour Engine
+     Features: Segmented Timeline Scrubber, True Pause/Resume & Dedicated Stop,
+               Generative Soothing Ambient Music (Eno/Satie Felt Piano),
+               Visible Particle Cascade Flight on Mode Transitions,
+               Pulsing Focal Halos & Stacked Movie Spotlight Cards.
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  // ── Chapter Manifest with Landmark Spotlight Films ────────────────────────
+  const DOC_CHAPTERS = [
+    {
+      id: 'ch0',
+      badge: 'PROLOGUE \u00b7 THE FULL CENTURY',
+      title: '1,000 Films. 100 Years.',
+      body: 'Every dot is an acclaimed masterpiece. The closer to the center, the higher the rating. Here is the architecture of modern cinema.',
+      stat: '1,000 FILMS \u00b7 \u2605 7.6 TO \u2605 9.3 \u00b7 1920 TO 2020',
+      mode: 'record',
+      decadeFilter: null,
+      spotlightFilms: ['imdb-0001', 'imdb-0002', 'imdb-0003'],
+      duration: 6500
+    },
+    {
+      id: 'ch1',
+      badge: 'CHAPTER 1 OF 6 \u00b7 ORIGINS',
+      title: 'The Silent Pioneers',
+      body: 'Only 17 films from the 1920s\u201330s survive in the Top 1000 \u2014 yet they invented the visual grammar of science fiction, comedy, and drama.',
+      stat: '\u2605 AVG 8.1 \u00b7 1920s\u201330s \u00b7 17 FILMS',
+      mode: 'record',
+      decadeFilter: '1920',
+      spotlightFilms: ['imdb-0127', 'imdb-0053', 'imdb-0052'],
+      duration: 7000
+    },
+    {
+      id: 'ch2',
+      badge: 'CHAPTER 2 OF 6 \u00b7 THE GOLDEN AGE',
+      title: "Hollywood's Unbroken Streak",
+      body: 'The 1940s\u201350s delivered 112 enduring masterworks \u2014 the highest concentration of critically sustained films per decade in history.',
+      stat: '\u2605 AVG 8.2 \u00b7 1940s\u201350s \u00b7 112 FILMS',
+      mode: 'record',
+      decadeFilter: '1940',
+      spotlightFilms: ['imdb-0051', 'imdb-0125', 'imdb-0005'],
+      duration: 7000
+    },
+    {
+      id: 'ch3',
+      badge: 'CHAPTER 3 OF 6 \u00b7 THE REVOLUTION',
+      title: 'New Hollywood: Cinema at Its Peak',
+      body: "Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith \u2014 the 60s\u201370s hold the highest average score in the dataset.",
+      stat: '\u2605 AVG 8.3 \u00b7 1960s\u201370s \u00b7 184 FILMS \u00b7 HIGHEST AVG',
+      mode: 'record',
+      decadeFilter: '1960',
+      spotlightFilms: ['imdb-0002', 'imdb-0075', 'imdb-0115'],
+      duration: 7500
+    },
+    {
+      id: 'ch4',
+      badge: 'CHAPTER 4 OF 6 \u00b7 THE 1994 MIRACLE',
+      title: 'One Year. Three Timeless Giants.',
+      body: 'The 1980s\u201390s dominate in volume (404 films). But 1994 alone gave birth to Shawshank, Pulp Fiction, and Forrest Gump simultaneously.',
+      stat: '\u2605 AVG 8.1 \u00b7 1980s\u201390s \u00b7 404 FILMS \u00b7 LARGEST ERA',
+      mode: 'timeline',
+      decadeFilter: '1980',
+      spotlightFilms: ['imdb-0001', 'imdb-0007', 'imdb-0012'],
+      duration: 7500
+    },
+    {
+      id: 'ch5',
+      badge: 'CHAPTER 5 OF 6 \u00b7 THE GLOBAL WAVE',
+      title: 'Cinema Goes Worldwide',
+      body: 'The 2000s\u201310s expanded global representation: South Korea, Japan, and international auteurs stood shoulder-to-shoulder with modern epics.',
+      stat: '283 FILMS \u00b7 2000s\u201310s \u00b7 HIGHEST DIVERSITY',
+      mode: 'timeline',
+      decadeFilter: '2000',
+      spotlightFilms: ['imdb-0003', 'imdb-0020', 'imdb-0006'],
+      duration: 7500
+    },
+    {
+      id: 'ch6',
+      badge: 'EPILOGUE \u00b7 TWO VERDICTS',
+      title: 'Critics vs. Audiences: A Permanent Split',
+      body: 'A Metascore above 90 rarely guarantees universal audience reverence. The two systems reward fundamentally different cinematic values.',
+      stat: 'METASCORE 90+ \u2260 IMDb 9.0+ \u00b7 GALAXY VIEW',
+      mode: 'galaxy',
+      decadeFilter: null,
+      spotlightFilms: ['imdb-0010', 'imdb-0022', 'imdb-0009'],
+      duration: 8000
+    }
+  ];
+
+  // ── Generative Soothing Ambient Music (Eno / Satie Style Ambient Soundscape) ──
+  class DocGenerativeAudio {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+      this.isPlaying = false;
+      this.timerChime = null;
+      this.timerPad = null;
+      this.masterGain = null;
+      this.delayNode = null;
+      this.delayFeedback = null;
+      this.currentChordIdx = 0;
+      this.activePadNodes = [];
+
+      // Soothing pentatonic scale for felt piano notes (C4..G5)
+      this.chimeScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
+
+      // Lush ambient chord beds (frequencies in Hz)
+      this.chordProgression = [
+        [130.81, 196.00, 246.94, 329.63],         // Cmaj9
+        [110.00, 164.81, 196.00, 261.63, 493.88], // Am9
+        [87.31,  130.81, 220.00, 329.63, 392.00], // Fmaj9
+        [98.00,  146.83, 196.00, 261.63, 293.66]  // Gsus4
+      ];
+    }
+
+    init() {
+      if (this.ctx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+
+      // Master Gain
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+      this.masterGain.connect(this.ctx.destination);
+
+      // Delay effect for spacious cinematic acoustic warmth
+      try {
+        this.delayNode = this.ctx.createDelay();
+        this.delayNode.delayTime.setValueAtTime(0.38, this.ctx.currentTime);
+        this.delayFeedback = this.ctx.createGain();
+        this.delayFeedback.gain.setValueAtTime(0.28, this.ctx.currentTime);
+
+        this.delayNode.connect(this.delayFeedback);
+        this.delayFeedback.connect(this.delayNode);
+        this.delayNode.connect(this.masterGain);
+      } catch (e) {}
+    }
+
+    start() {
+      if (this.muted) return;
+      this.init();
+      if (!this.ctx) return;
+
+      const run = () => {
+        this.isPlaying = true;
+        this.stopPad();
+        clearTimeout(this.timerChime);
+        clearTimeout(this.timerPad);
+
+        if (this.masterGain) {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(0.001, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.28, now + 1.2);
+        }
+
+        // Start ambient chord pads and gentle felt-piano droplets
+        this.playPadChord();
+        this.playGentleChime();
+        this.scheduleNextChime();
+      };
+
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().then(run).catch(() => {});
+      } else {
+        run();
+      }
+    }
+
+    playPadChord() {
+      if (!this.isPlaying || this.muted || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const chord = this.chordProgression[this.currentChordIdx];
+      this.currentChordIdx = (this.currentChordIdx + 1) % this.chordProgression.length;
+
+      // Filter for warm soft acoustic tone
+      const padFilter = this.ctx.createBiquadFilter();
+      padFilter.type = 'lowpass';
+      padFilter.frequency.setValueAtTime(550, now);
+
+      const padGain = this.ctx.createGain();
+      padGain.gain.setValueAtTime(0.0001, now);
+      padGain.gain.exponentialRampToValueAtTime(0.065, now + 2.0); // 2s smooth swell
+      padGain.gain.setValueAtTime(0.065, now + 5.0);
+      padGain.gain.exponentialRampToValueAtTime(0.0001, now + 7.8); // gentle fade
+
+      padGain.connect(padFilter);
+      padFilter.connect(this.masterGain);
+
+      const chordOscs = chord.map(freq => {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        // Gentle warm detune for chorused cinematic feel
+        const detune = (Math.random() - 0.5) * 8;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.detune.setValueAtTime(detune, now);
+        osc.connect(padGain);
+        osc.start(now);
+        osc.stop(now + 8.0);
+        return osc;
+      });
+
+      this.activePadNodes.push({ oscs: chordOscs, gain: padGain, filter: padFilter });
+      if (this.activePadNodes.length > 3) {
+        this.activePadNodes.shift();
+      }
+
+      // Schedule next crossfading pad chord
+      this.timerPad = setTimeout(() => {
+        if (this.isPlaying && !this.muted) {
+          this.playPadChord();
+        }
+      }, 6200);
+    }
+
+    scheduleNextChime() {
+      if (!this.isPlaying || this.muted) return;
+      const delayMs = 1800 + Math.random() * 1600; // note every 1.8s - 3.4s
+      this.timerChime = setTimeout(() => {
+        if (!this.isPlaying || this.muted) return;
+        this.playGentleChime();
+        this.scheduleNextChime();
+      }, delayMs);
+    }
+
+    playGentleChime() {
+      if (!this.ctx || this.muted || !this.isPlaying) return;
+      const now = this.ctx.currentTime;
+      const freq = this.chimeScale[Math.floor(Math.random() * this.chimeScale.length)];
+
+      // Primary sine oscillator for pure felt-piano fundamental
+      const osc = this.ctx.createOscillator();
+      const oscGain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      oscGain.gain.setValueAtTime(0.0001, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.14, now + 0.02); // crisp attack
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8); // warm ring
+
+      osc.connect(oscGain);
+      oscGain.connect(this.masterGain);
+      if (this.delayNode) {
+        oscGain.connect(this.delayNode);
+      }
+
+      osc.start(now);
+      osc.stop(now + 3.0);
+
+      // Soft harmonic overtone for felt warmth
+      if (Math.random() > 0.5) {
+        const overtone = this.ctx.createOscillator();
+        const overGain = this.ctx.createGain();
+        overtone.type = 'triangle';
+        overtone.frequency.setValueAtTime(freq * 2, now + 0.01);
+
+        overGain.gain.setValueAtTime(0.0001, now + 0.01);
+        overGain.gain.exponentialRampToValueAtTime(0.035, now + 0.04);
+        overGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+        overtone.connect(overGain);
+        overGain.connect(this.masterGain);
+        overtone.start(now + 0.01);
+        overtone.stop(now + 2.0);
+      }
+    }
+
+    stopPad() {
+      this.activePadNodes.forEach(item => {
+        try {
+          item.oscs.forEach(o => o.stop());
+        } catch (e) {}
+      });
+      this.activePadNodes = [];
+    }
+
+    duck() {
+      if (this.masterGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.06, now + 0.3);
+        } catch (e) {}
+      }
+    }
+
+    unduck() {
+      if (this.masterGain && this.ctx && !this.muted && this.isPlaying) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.28, now + 0.5);
+        } catch (e) {}
+      }
+    }
+
+    stop() {
+      this.isPlaying = false;
+      clearTimeout(this.timerChime);
+      clearTimeout(this.timerPad);
+      if (this.masterGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
+        } catch (e) {}
+      }
+      setTimeout(() => {
+        this.stopPad();
+      }, 500);
+    }
+
+    toggleMute() {
+      this.muted = !this.muted;
+      if (this.muted) {
+        this.stop();
+      } else {
+        if (docTourState === 'playing') {
+          this.start();
+        }
+      }
+      return this.muted;
+    }
+  }
+
+  const docAudio = new DocGenerativeAudio();
+
+  // ── State Management ──────────────────────────────────────────────────────
+  let docTourState        = 'idle'; // 'idle' | 'playing' | 'paused'
+  let docCurrentChIdx     = -1;
+  let docTimer            = null;
+  let docChapterStartTime = 0;
+  let docRemainingMs      = 0;
+
+  // ── DOM References ────────────────────────────────────────────────────────
+  const docPlayBtn      = document.getElementById('doc-play-btn');
+  const docPlayIcon     = document.getElementById('doc-play-icon');
+  const docPlayLabel    = document.getElementById('doc-play-label');
+  const docStopBtn      = document.getElementById('doc-stop-btn');
+  const docSoundBtn     = document.getElementById('doc-sound-btn');
+  const docSoundIcon    = document.getElementById('doc-sound-icon');
+  const docScrubber     = document.getElementById('doc-scrubber');
+  const docSegmentsWrap = document.getElementById('doc-segments-container');
+  const docCallout      = document.getElementById('doc-callout');
+  const docBadge        = document.getElementById('doc-chapter-badge');
+  const docCallTitle    = document.getElementById('doc-callout-title');
+  const docCallBody     = document.getElementById('doc-callout-body');
+  const docCallStat     = document.getElementById('doc-callout-stat');
+  const docSpotlights   = document.getElementById('doc-spotlights');
+
+  // ── Build Segmented Scrubber Bar ──────────────────────────────────────────
+  function buildDocSegments() {
+    if (!docSegmentsWrap) return;
+    docSegmentsWrap.innerHTML = '';
+    DOC_CHAPTERS.forEach((ch, i) => {
+      const seg = document.createElement('div');
+      seg.className = 'doc-segment';
+      seg.id = `doc-seg-${i}`;
+      seg.innerHTML = `
+        <div class="doc-segment-track">
+          <div class="doc-segment-fill" id="doc-seg-fill-${i}"></div>
+        </div>
+        <div class="doc-segment-label">
+          <span class="doc-segment-num">0${i + 1}</span>
+          <span class="doc-segment-text">${esc(ch.title)}</span>
+        </div>
+      `;
+      seg.addEventListener('click', () => {
+        docJumpToChapter(i);
+      });
+      docSegmentsWrap.appendChild(seg);
+    });
+  }
+  buildDocSegments();
+
+  // ── Play / Pause Button Listener ─────────────────────────────────────────
+  docPlayBtn.addEventListener('click', () => {
+    if (docTourState === 'playing') {
+      docPauseTour();
+    } else if (docTourState === 'paused') {
+      docResumeTour();
+    } else {
+      docStartTour(0);
+    }
+  });
+
+  // ── Dedicated Stop Button Listener ───────────────────────────────────────
+  if (docStopBtn) {
+    docStopBtn.addEventListener('click', () => {
+      docStopTour();
+    });
+  }
+
+  // ── Sound Toggle Button Listener ─────────────────────────────────────────
+  if (docSoundBtn) {
+    docSoundBtn.addEventListener('click', () => {
+      const isMuted = docAudio.toggleMute();
+      docSoundBtn.classList.toggle('muted', isMuted);
+      docSoundIcon.textContent = isMuted ? '🔇' : '🔊';
+    });
+  }
+
+  // ── Coordinates Getter Helper ────────────────────────────────────────────
+  function getFilmCoords(id) {
+    if (currentMode === 'timeline') return posTimeline.get(id) || { x: cx, y: cy };
+    if (currentMode === 'galaxy')   return posGalaxy.get(id)   || { x: cx, y: cy };
+    return posRecord.get(id) || { x: cx, y: cy };
+  }
+
+  // ── Render Spotlight Halos on SVG Canvas ─────────────────────────────────
+  function renderSpotlightHalos(filmIds) {
+    spotlightG.selectAll('*').remove();
+    dots.classed('doc-spotlight-dot', false);
+
+    if (!filmIds || !filmIds.length) return;
+
+    filmIds.forEach(fid => {
+      const f = filmsById[fid];
+      if (!f) return;
+
+      dots.filter(d => d.id === fid).classed('doc-spotlight-dot', true);
+
+      const pos = getFilmCoords(fid);
+      if (!pos) return;
+
+      spotlightG.append('circle')
+        .attr('class', 'spotlight-pulse')
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
+        .attr('r', 8);
+    });
+  }
+
+  // ── Start Tour ───────────────────────────────────────────────────────────
+  function docStartTour(startIdx = 0) {
+    docTourState = 'playing';
+
+    // Update Buttons
+    docPlayIcon.textContent = '\u23f8';
+    docPlayLabel.textContent = 'PAUSE';
+    docPlayBtn.className = 'playing';
+    if (docStopBtn) docStopBtn.style.display = 'flex';
+
+    docScrubber.classList.add('visible');
+    document.body.classList.add('doc-playing');
+
+    tooltipEl.style.display = 'none';
+    overlay.classList.remove('visible');
+
+    docAudio.start();
+    docGoToChapter(startIdx);
+  }
+
+  // ── Pause Tour (True Pause) ──────────────────────────────────────────────
+  function docPauseTour() {
+    if (docTourState !== 'playing') return;
+    docTourState = 'paused';
+
+    clearTimeout(docTimer);
+
+    // Calculate elapsed and remaining time
+    const currentCh = DOC_CHAPTERS[docCurrentChIdx];
+    const elapsed = Date.now() - docChapterStartTime;
+    docRemainingMs = Math.max(400, (currentCh ? currentCh.duration : 6000) - elapsed);
+
+    // Freeze current segment fill at exact elapsed fraction
+    if (currentCh) {
+      const currentProgress = Math.min(0.98, Math.max(0.02, elapsed / currentCh.duration));
+      const fill = document.getElementById(`doc-seg-fill-${docCurrentChIdx}`);
+      if (fill) {
+        fill.style.transition = 'none';
+        fill.style.transform = `scaleX(${currentProgress})`;
+      }
+    }
+
+    // Update UI
+    docPlayIcon.textContent = '\u25b6';
+    docPlayLabel.textContent = 'RESUME';
+    docPlayBtn.className = 'paused';
+
+    docAudio.duck();
+  }
+
+  // ── Resume Tour (True Resume) ────────────────────────────────────────────
+  function docResumeTour() {
+    if (docTourState !== 'paused') return;
+    docTourState = 'playing';
+
+    // Update UI
+    docPlayIcon.textContent = '\u23f8';
+    docPlayLabel.textContent = 'PAUSE';
+    docPlayBtn.className = 'playing';
+
+    docAudio.unduck();
+
+    const currentCh = DOC_CHAPTERS[docCurrentChIdx];
+    if (!currentCh) {
+      docStartTour(0);
+      return;
+    }
+
+    // Resume segment fill for the remaining duration
+    const fill = document.getElementById(`doc-seg-fill-${docCurrentChIdx}`);
+    if (fill) {
+      requestAnimationFrame(() => {
+        fill.style.transition = `transform ${docRemainingMs}ms linear`;
+        fill.style.transform = 'scaleX(1)';
+      });
+    }
+
+    docChapterStartTime = Date.now() - (currentCh.duration - docRemainingMs);
+
+    // Schedule next chapter after remaining duration
+    docTimer = setTimeout(() => {
+      if (docTourState !== 'playing') return;
+      if (docCurrentChIdx < DOC_CHAPTERS.length - 1) {
+        docGoToChapter(docCurrentChIdx + 1);
+      } else {
+        docStopTour();
+      }
+    }, docRemainingMs);
+  }
+
+  // ── Jump To Chapter (User clicks segment) ────────────────────────────────
+  function docJumpToChapter(idx) {
+    if (docTourState === 'idle') {
+      docStartTour(idx);
+    } else {
+      docTourState = 'playing';
+      docPlayIcon.textContent = '\u23f8';
+      docPlayLabel.textContent = 'PAUSE';
+      docPlayBtn.className = 'playing';
+      if (docStopBtn) docStopBtn.style.display = 'flex';
+      docAudio.unduck();
+      docGoToChapter(idx);
+    }
+  }
+
+  // ── Stop Tour (Full Reset) ───────────────────────────────────────────────
+  function docStopTour() {
+    docTourState = 'idle';
+    docCurrentChIdx = -1;
+    clearTimeout(docTimer);
+
+    // Update Buttons
+    docPlayIcon.textContent = '\u25b6';
+    docPlayLabel.textContent = 'PLAY STORY';
+    docPlayBtn.className = '';
+    if (docStopBtn) docStopBtn.style.display = 'none';
+
+    docScrubber.classList.remove('visible');
+    document.body.classList.remove('doc-playing');
+    document.body.classList.remove('doc-moving');
+
+    docHideCallout();
+    docAudio.stop();
+
+    spotlightG.selectAll('*').remove();
+    dots.classed('doc-focus', false).classed('doc-spotlight-dot', false);
+
+    // Reset filters and views
+    activeDecades.clear();
+    activeGenres.clear();
+    document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+    applyFilters();
+
+    // Reset all segment bars
+    DOC_CHAPTERS.forEach((_, i) => {
+      const seg = document.getElementById(`doc-seg-${i}`);
+      const fill = document.getElementById(`doc-seg-fill-${i}`);
+      if (seg) seg.className = 'doc-segment';
+      if (fill) {
+        fill.style.transition = 'none';
+        fill.style.transform = 'scaleX(0)';
+      }
+    });
+  }
+
+  // ── Go To Chapter ────────────────────────────────────────────────────────
+  function docGoToChapter(idx) {
+    if (idx < 0 || idx >= DOC_CHAPTERS.length) { docStopTour(); return; }
+    clearTimeout(docTimer);
+
+    docCurrentChIdx = idx;
+    const ch = DOC_CHAPTERS[idx];
+    docChapterStartTime = Date.now();
+    docRemainingMs = ch.duration;
+
+    // Update segmented scrubber states
+    DOC_CHAPTERS.forEach((_, i) => {
+      const seg = document.getElementById(`doc-seg-${i}`);
+      const fill = document.getElementById(`doc-seg-fill-${i}`);
+      if (!seg || !fill) return;
+
+      fill.style.transition = 'none';
+      if (i < idx) {
+        seg.className = 'doc-segment completed';
+        fill.style.transform = 'scaleX(1)';
+      } else if (i === idx) {
+        seg.className = 'doc-segment active';
+        fill.style.transform = 'scaleX(0)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (docTourState === 'playing') {
+              fill.style.transition = `transform ${ch.duration}ms linear`;
+              fill.style.transform = 'scaleX(1)';
+            }
+          });
+        });
+      } else {
+        seg.className = 'doc-segment';
+        fill.style.transform = 'scaleX(0)';
+      }
+    });
+
+    // Step 1: Hide callout, clear spotlights, switch mode
+    docHideCallout();
+    spotlightG.selectAll('*').remove();
+
+    activeDecades.clear();
+    activeGenres.clear();
+    document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+
+    // Switch visualization mode (runs 1100ms transition with glowing particles)
+    const isModeChange = (ch.mode !== currentMode);
+    if (isModeChange) {
+      switchMode(ch.mode);
+    } else {
+      clearConstellations();
+    }
+
+    // Step 2: After mode transition flight settles: apply focus and show landmark cards
+    const settleDelay = isModeChange ? 1150 : 250;
+
+    setTimeout(() => {
+      if (docTourState === 'idle') return;
+
+      // Apply decade filter if specified
+      if (ch.decadeFilter) {
+        activeDecades.add(ch.decadeFilter);
+        const decBtn = document.querySelector(`[data-decade="${ch.decadeFilter}"]`);
+        if (decBtn) decBtn.classList.add('active');
+      }
+      applyFilters();
+
+      // Highlight focused dots
+      dots.classed('doc-focus', d =>
+        ch.decadeFilter ? d.decadeGroup === ch.decadeFilter : true
+      );
+
+      // Render pulsing halo rings on SVG for spotlighted films
+      renderSpotlightHalos(ch.spotlightFilms || []);
+
+      // Populate Landmark Mini-Cards (Stacked for full readability)
+      if (ch.spotlightFilms && ch.spotlightFilms.length) {
+        docSpotlights.innerHTML = `
+          <div class="doc-spotlight-heading">LANDMARK TITLES</div>
+          <div class="doc-spotlight-cards">
+            ${ch.spotlightFilms.map(fid => {
+              const f = filmsById[fid];
+              if (!f) return '';
+              return `
+                <div class="doc-spotlight-card" data-filmid="${f.id}" title="Inspect ${esc(f.t)}">
+                  <img class="doc-spotlight-poster" src="${esc(f.p || '')}" alt="${esc(f.t)}" onerror="this.style.display='none'">
+                  <div class="doc-spotlight-info">
+                    <div class="doc-spotlight-text-col">
+                      <div class="doc-spotlight-title">${esc(f.t)}</div>
+                      <div class="doc-spotlight-meta">${f.y || ''} \u00b7 ${esc(f.dir || '')}</div>
+                    </div>
+                    <div class="doc-spotlight-rating">\u2605 ${Number(f.r).toFixed(1)}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        // Attach click handlers to mini cards to open full detail modal
+        docSpotlights.querySelectorAll('.doc-spotlight-card').forEach(card => {
+          card.addEventListener('click', e => {
+            e.stopPropagation();
+            const fid = card.getAttribute('data-filmid');
+            const f = filmsById[fid];
+            if (f) {
+              docPauseTour();
+              openOverlay(f);
+            }
+          });
+        });
+      } else {
+        docSpotlights.innerHTML = '';
+      }
+
+      // Position callout card in guaranteed non-overlapping left safe zone
+      docPositionCallout(idx);
+      docBadge.textContent = ch.badge;
+      docCallTitle.textContent = ch.title;
+      docCallBody.textContent = ch.body;
+      docCallStat.textContent = ch.stat;
+
+      setTimeout(() => {
+        if (docTourState === 'idle') return;
+        docCallout.setAttribute('aria-hidden', 'false');
+        docCallout.classList.add('visible');
+      }, 80);
+
+      // Auto-advance timer: fires exactly when the segment fill hits 100%
+      docTimer = setTimeout(() => {
+        if (docTourState !== 'playing') return;
+        if (idx < DOC_CHAPTERS.length - 1) {
+          docGoToChapter(idx + 1);
+        } else {
+          docStopTour();
+        }
+      }, ch.duration);
+
+    }, settleDelay);
+  }
+
+  // ── Position Callout in guaranteed non-overlapping safe zone ──────────────
+  function docPositionCallout(idx) {
+    const margin = 28;
+    docCallout.style.left = margin + 'px';
+    docCallout.style.top  = '68px';
+  }
+
+  // ── Hide Callout ───────────────────────────────────────────────────────────
+  function docHideCallout() {
+    docCallout.classList.remove('visible');
+    docCallout.setAttribute('aria-hidden', 'true');
+  }
+
+  // ── Escape key stops documentary mode ─────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && docTourState !== 'idle') {
+      docStopTour();
+    }
+  });
 
 })();
