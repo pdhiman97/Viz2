@@ -485,21 +485,21 @@
       .text(`★ ${rtg.toFixed(1)}`);
   });
 
-  // Quadrant Labels
+  // Quadrant Labels - positioned safely in outer margins to prevent overlapping with film dots
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + galPadYTop + 16)
+    .attr('x', canvasW - galPadX).attr('y', topBarH + galPadYTop - 18)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
-    .text('UNIVERSAL MASTERPIECES (CRITIC 100 + AUDIENCE 9.0+)');
+    .text('UNIVERSAL MASTERPIECES (CRITIC 100 · AUDIENCE 9.0+)');
 
   galaxyScenery.append('text')
-    .attr('x', galPadX + 10).attr('y', topBarH + galPadYTop + 16)
+    .attr('x', galPadX).attr('y', topBarH + galPadYTop - 18)
     .attr('text-anchor', 'start').attr('class', 'quadrant-label')
     .text('AUDIENCE CULT FAVORITES (HIGH RATING / MODEST CRITIC)');
 
   galaxyScenery.append('text')
-    .attr('x', canvasW - galPadX - 10).attr('y', topBarH + canvasH - galPadYBottom - 14)
+    .attr('x', canvasW - galPadX).attr('y', topBarH + canvasH - galPadYBottom + 44)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
-    .text('CRITICAL DARLINGS (HIGH METASCORE)');
+    .text('CRITICAL DARLINGS (HIGH METASCORE · MODEST RATING)');
 
   /* ── 7. RENDER FILM DOTS ────────────────────────────────────────────────── */
 
@@ -548,11 +548,205 @@
     .attr('letter-spacing', '0.12em')
     .text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING');
 
+  /* ── 8b. MOTION CHOREOGRAPHER: INTERACTIVE AUDIO SYNTHESIZER ─────────────── */
+  const SoundFX = (function() {
+    let ctx = null;
+    let enabled = (function() {
+      try { return localStorage.getItem('viz_sfx') !== 'off'; } catch (e) { return true; }
+    })();
+
+    function getCtx() {
+      if (!ctx && (window.AudioContext || window.webkitAudioContext)) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        ctx = new AudioCtx();
+      }
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      return ctx;
+    }
+
+    return {
+      isEnabled() { return enabled; },
+      toggle() {
+        enabled = !enabled;
+        try { localStorage.setItem('viz_sfx', enabled ? 'on' : 'off'); } catch (e) {}
+        updateAudioBtnUI();
+        if (enabled) {
+          this.playFilterPulse(580);
+        }
+        return enabled;
+      },
+      playModeSwitch(mode) {
+        if (!enabled) return;
+        const c = getCtx();
+        if (!c) return;
+        const now = c.currentTime;
+        const baseFreq = mode === 'record' ? 220 : (mode === 'timeline' ? 330 : 440);
+        [baseFreq, baseFreq * 1.5].forEach((freq, idx) => {
+          const osc = c.createOscillator();
+          const gain = c.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
+          osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.35);
+
+          gain.gain.setValueAtTime(0.05, now + idx * 0.04);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+          osc.connect(gain);
+          gain.connect(c.destination);
+          osc.start(now + idx * 0.04);
+          osc.stop(now + 0.5);
+        });
+      },
+      playFilterPulse(customFreq = null) {
+        if (!enabled) return;
+        const c = getCtx();
+        if (!c) return;
+        const now = c.currentTime;
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(customFreq || 520, now);
+        osc.frequency.exponentialRampToValueAtTime(customFreq ? customFreq * 0.8 : 380, now + 0.08);
+
+        gain.gain.setValueAtTime(0.045, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
+
+        osc.connect(gain);
+        gain.connect(c.destination);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      },
+      playDotHover(rating) {
+        if (!enabled) return;
+        const c = getCtx();
+        if (!c) return;
+        const now = c.currentTime;
+        const osc = c.createOscillator();
+        const gain = c.createGain();
+        osc.type = 'sine';
+        const freq = 320 + Math.max(0, (rating - 7.6)) * 260;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.03, now);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
+
+        osc.connect(gain);
+        gain.connect(c.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      }
+    };
+  })();
+
+  function updateAudioBtnUI() {
+    const sfxBtn = document.getElementById('sfx-toggle-btn');
+    const sfxIcon = document.getElementById('sfx-toggle-icon');
+    const sfxLabel = document.getElementById('sfx-toggle-label');
+    if (!sfxBtn || !sfxIcon || !sfxLabel) return;
+    if (SoundFX.isEnabled()) {
+      sfxIcon.textContent = '🔊';
+      sfxLabel.textContent = 'AUDIO';
+      sfxBtn.classList.remove('muted');
+      sfxBtn.setAttribute('title', 'Interactive Audio Enabled (Click to Mute)');
+    } else {
+      sfxIcon.textContent = '🔇';
+      sfxLabel.textContent = 'MUTED';
+      sfxBtn.classList.add('muted');
+      sfxBtn.setAttribute('title', 'Interactive Audio Muted (Click to Enable)');
+    }
+  }
+  updateAudioBtnUI();
+
+  const sfxToggleBtn = document.getElementById('sfx-toggle-btn');
+  if (sfxToggleBtn) {
+    sfxToggleBtn.addEventListener('click', () => {
+      SoundFX.toggle();
+    });
+  }
+
+  /* ── 8c. CHART NARRATIVE CRAFTER: DYNAMIC EDITORIAL HUD ──────────────────── */
+  function updateNarrativeHUD(mode = currentMode) {
+    const hud = document.getElementById('narrative-hud');
+    const tagEl = document.getElementById('narrative-tag');
+    const titleEl = document.getElementById('narrative-headline');
+    const subEl = document.getElementById('narrative-subdeck');
+    if (!hud || !tagEl || !titleEl || !subEl) return;
+
+    const activeFilmsList = films.filter(isFilmActive);
+    const totalCount = activeFilmsList.length;
+    const avgRating = totalCount > 0 ? (activeFilmsList.reduce((acc, f) => acc + f.rating, 0) / totalCount).toFixed(2) : '0';
+
+    // 1. If searching
+    if (searchQuery) {
+      tagEl.textContent = `OMNI SEARCH · "${searchQuery.toUpperCase()}"`;
+      titleEl.textContent = `${totalCount} FILM${totalCount === 1 ? '' : 'S'} MATCHING "${searchQuery.toUpperCase()}"`;
+      subEl.textContent = `Average rating: ★${avgRating} · Filtered across titles, directors, actors, and genres.`;
+      return;
+    }
+
+    // 2. If genre filtered
+    if (activeGenres.size === 1) {
+      const g = [...activeGenres][0];
+      tagEl.textContent = `GENRE ESSENCE · ${g.toUpperCase()}`;
+      titleEl.textContent = `${g.toUpperCase()}: ${totalCount} MASTERPIECES (★${avgRating} AVG)`;
+      subEl.textContent = `Representing ${((totalCount / 1000) * 100).toFixed(1)}% of all-time cinema classics in the IMDb Top 1000.`;
+      return;
+    } else if (activeGenres.size > 1) {
+      const gNames = [...activeGenres].slice(0, 2).join(' + ').toUpperCase();
+      tagEl.textContent = `COMBINED GENRES · ${activeGenres.size} SELECTED`;
+      titleEl.textContent = `${gNames} & MORE: ${totalCount} FILMS (★${avgRating} AVG)`;
+      subEl.textContent = `Co-occurrence across multiple cinematic genres and eras.`;
+      return;
+    }
+
+    // 3. If decade filtered
+    if (activeDecades.size === 1) {
+      const d = [...activeDecades][0];
+      const eraNames = {
+        '1920': 'Silent Pioneers & Early Talkies (1920s)',
+        '1930': 'Golden Age of Hollywood (1930s)',
+        '1940': 'Post-War Realism & Film-Noir (1940s)',
+        '1950': 'Widescreen Spectacle & Auteur Era (1950s)',
+        '1960': 'New Wave & Cinematic Rebellion (1960s)',
+        '1970': 'New Hollywood Masterpiece Wave (1970s)',
+        '1980': 'Blockbuster Awakening & Indie Rise (1980s)',
+        '1990': 'The Modern Renaissance (1990s)',
+        '2000': 'Digital Frontiers & Modern Epics (2000s)',
+        '2010': 'Streaming Era & Global Expansion (2010s)',
+        '2020': 'Contemporary Masterworks (2020s)'
+      };
+      tagEl.textContent = `DECADE DOSSIER · ${d}s`;
+      titleEl.textContent = `${eraNames[d] || d + 's'}: ${totalCount} FILMS (★${avgRating} AVG)`;
+      subEl.textContent = `Historical density, aesthetic evolution, and landmark director achievements.`;
+      return;
+    }
+
+    // 4. Default Mode Narratives
+    if (mode === 'record') {
+      tagEl.textContent = 'CONCENTRIC RADIAL GROOVES';
+      titleEl.textContent = 'A CENTURY IN GROOVES: 1,000 MASTERPIECES (★7.6 → ★9.3)';
+      subEl.textContent = 'Distance from centre encodes IMDb rating gravity · 74% of all-time classics cluster in the outer orbital band.';
+    } else if (mode === 'timeline') {
+      tagEl.textContent = 'CHRONOLOGICAL SOUNDWAVE';
+      titleEl.textContent = 'THE GOLDEN RHYTHMS: 1920 → 2020 CHRONOLOGY';
+      subEl.textContent = 'Historical volume surged in 1994 & 2014, while 1970s retained highest average critical Metascore density.';
+    } else if (mode === 'galaxy') {
+      tagEl.textContent = 'CRITIC VS AUDIENCE CONSENSUS';
+      titleEl.textContent = 'THE DIVERGENCE GALAXY: METASCORE (X) VS IMDb RATING (Y)';
+      subEl.textContent = 'Only 12 masterpieces achieve the elusive dual crown (Metascore 95+ and Audience 9.0+).';
+    }
+  }
+
   /* ── 9. MODE SWITCHER LOGIC ─────────────────────────────────────────────── */
 
   function switchMode(newMode) {
     if (newMode === currentMode) return;
     currentMode = newMode;
+
+    // Trigger sonic pulse
+    SoundFX.playModeSwitch(newMode);
 
     // Update active tab button
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -588,19 +782,19 @@
       }, 1400);
     }
 
-    // Animate all dots to new target coordinates with organic ripple delays
+    // Animate all dots to new target coordinates with organic ripple delays (Motion Choreographer)
     dots.transition('move')
       .duration(1100)
       .delay(d => {
         if (newMode === 'record') {
           const pt = posRecord.get(d.id) || { x: cx, y: cy };
-          return Math.min(260, Math.max(0, Math.hypot(pt.x - cx, pt.y - cy) * 0.45));
+          return Math.min(520, Math.max(0, Math.hypot(pt.x - cx, pt.y - cy) * 0.8));
         } else if (newMode === 'timeline') {
           const yr = d.releaseYear || d.y || 1995;
-          return Math.min(280, Math.max(0, (yr - 1920) * 2.8));
+          return Math.min(550, Math.max(0, (yr - 1920) * 5.2));
         } else if (newMode === 'galaxy') {
           const ms = d.ms != null ? d.ms : 70;
-          return Math.min(280, Math.max(0, (ms - 40) * 3.8));
+          return Math.min(550, Math.max(0, (ms - 40) * 7.2));
         }
         return 0;
       })
@@ -627,6 +821,9 @@
     } else if (newMode === 'galaxy') {
       decodeKeyText.text('X = METASCORE (CRITIC 40 → 100) · Y = IMDb (AUDIENCE 7.6 → 9.3) · SIZE = IMDb RATING');
     }
+
+    // Update dynamic Narrative Sub-deck (Chart Narrative Crafter)
+    updateNarrativeHUD(newMode);
   }
 
   document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -700,6 +897,9 @@
     if (!isFilmActive(d)) return;
     hoveredDotEl = this;
     hoveredFilm  = d;
+
+    // Trigger Motion Choreographer melodic micro-pulse
+    SoundFX.playDotHover(d.r || 8.0);
 
     // No raise(), no radius change, no stroke — just glow
     d3.select(this)
@@ -897,7 +1097,13 @@
       .classed('dimmed',        d => !isFilmActive(d))
       .classed('search-match',  d => searchQuery && isFilmSearchMatch(d, searchQuery));
 
-    dots.transition('filter').duration(320)
+    // Motion Choreographer: Staggered ripple wave cascade across active/dimmed dots
+    dots.transition('filter').duration(420)
+      .delay(d => {
+        const pt = (currentMode === 'timeline' ? posTimeline.get(d.id) : (currentMode === 'galaxy' ? posGalaxy.get(d.id) : posRecord.get(d.id))) || { x: cx, y: cy };
+        return Math.min(220, Math.max(0, Math.hypot(pt.x - cx, pt.y - cy) * 0.32));
+      })
+      .ease(d3.easeCubicOut)
       .attr('opacity', d => getDotOpacity(d))
       .attr('fill',    d => getDotFill(d));
 
@@ -912,6 +1118,9 @@
     } else {
       searchCountEl.textContent = '';
     }
+
+    // Chart Narrative Crafter: Dynamic headline update on filter change
+    updateNarrativeHUD(currentMode);
   }
 
   /* ── 14. OMNI SEARCH INPUT EVENT ────────────────────────────────────────── */
@@ -926,6 +1135,7 @@
   });
 
   searchClear.addEventListener('click', () => {
+    SoundFX.playFilterPulse(400);
     searchInput.value = '';
     searchQuery = '';
     searchClear.classList.remove('visible');
@@ -937,6 +1147,7 @@
 
   document.querySelectorAll('#decade-filter .flt-btn[data-decade]').forEach(btn => {
     btn.addEventListener('click', () => {
+      SoundFX.playFilterPulse(520);
       const dec = btn.getAttribute('data-decade');
       if (activeDecades.has(dec)) { activeDecades.delete(dec); btn.classList.remove('active'); }
       else                        { activeDecades.add(dec);    btn.classList.add('active'); }
@@ -945,6 +1156,7 @@
   });
 
   document.getElementById('clear-decade').addEventListener('click', () => {
+    SoundFX.playFilterPulse(420);
     activeDecades.clear();
     document.querySelectorAll('#decade-filter .flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
@@ -964,6 +1176,7 @@
     genreFilterEl.appendChild(btn);
 
     btn.addEventListener('click', () => {
+      SoundFX.playFilterPulse(560);
       if (activeGenres.has(genre)) { activeGenres.delete(genre); btn.classList.remove('active'); }
       else                         { activeGenres.add(genre);    btn.classList.add('active'); }
       applyFilters();
@@ -971,6 +1184,7 @@
   });
 
   document.getElementById('clear-genre').addEventListener('click', () => {
+    SoundFX.playFilterPulse(420);
     activeGenres.clear();
     document.querySelectorAll('.genre-flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
@@ -980,6 +1194,7 @@
 
   document.querySelectorAll('#runtime-filter .rt-flt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
+      SoundFX.playFilterPulse(500);
       const rtCat = btn.getAttribute('data-runtime');
       if (activeRuntimes.has(rtCat)) { activeRuntimes.delete(rtCat); btn.classList.remove('active'); }
       else                           { activeRuntimes.add(rtCat);    btn.classList.add('active'); }
@@ -988,6 +1203,7 @@
   });
 
   document.getElementById('clear-runtime').addEventListener('click', () => {
+    SoundFX.playFilterPulse(420);
     activeRuntimes.clear();
     document.querySelectorAll('#runtime-filter .rt-flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
@@ -1083,8 +1299,9 @@
     });
   }
 
-  // Initialize theme on start
+  // Initialize theme and narrative HUD on start
   setTheme(currentTheme, false);
+  updateNarrativeHUD(currentMode);
 
   /* ── 18. KEYBOARD SHORTCUTS ─────────────────────────────────────────────── */
 

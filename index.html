@@ -43,6 +43,12 @@
       <span id="theme-toggle-label">LIGHT</span>
     </button>
 
+    <!-- Motion Choreographer: Sonic Feedback Toggle -->
+    <button id="sfx-toggle-btn" class="theme-toggle-btn" aria-label="Toggle interactive audio feedback" title="Toggle Interactive Audio">
+      <span id="sfx-toggle-icon">🔊</span>
+      <span id="sfx-toggle-label">AUDIO</span>
+    </button>
+
     <!-- Omni Search Bar -->
     <div id="search-box">
       <span class="search-icon" aria-hidden="true">⚲</span>
@@ -51,6 +57,13 @@
       <span id="search-count" aria-live="polite"></span>
     </div>
   </header>
+
+  <!-- Chart Narrative Crafter: Editorial Headline & Sub-deck HUD -->
+  <aside id="narrative-hud" aria-live="polite">
+    <div class="narrative-tag" id="narrative-tag">EDITORIAL INSIGHT</div>
+    <h1 class="narrative-headline" id="narrative-headline">A Century in Grooves: 1,000 Masterpieces Orbiting from ★7.6 to ★9.3</h1>
+    <p class="narrative-subdeck" id="narrative-subdeck">Distance from centre encodes IMDb audience rating · 74% of all-time greats cluster in the outer orbital band.</p>
+  </aside>
 
   <!-- SVG Visualization Canvas -->
   <svg id="record-svg" role="img" aria-label="Interactive artistic visualization of IMDb top 1000 films"></svg>
