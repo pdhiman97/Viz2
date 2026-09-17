@@ -935,54 +935,74 @@
   // ── Chapter Manifest (generated from IMDB Top 1000 dataset analytics) ──────
   const DOC_CHAPTERS = [
     {
+      id: 'ch0',
+      badge: 'PROLOGUE \u00b7 THE FULL CENTURY',
+      title: '1,000 Films. 100 Years.',
+      body: 'Every dot is a film. Every ring a rating. The closer to the center, the higher the acclaim. This is what 100 years of cinema looks like.',
+      stat: '1,000 FILMS \u00b7 \u2605 7.6 TO \u2605 9.3 \u00b7 1920 TO 2020',
+      mode: 'record',
+      decadeFilter: null,
+      duration: 6000
+    },
+    {
       id: 'ch1',
-      badge: 'CHAPTER 1 OF 5 \u00b7 ORIGINS',
+      badge: 'CHAPTER 1 OF 6 \u00b7 ORIGINS',
       title: 'The Silent Pioneers',
-      body: '17 films from the 1920s-30s earned Top 1000 status — each one foundational to every genre that followed.',
+      body: 'Only 17 films from the 1920s-30s survive in the Top 1000 — yet they invented every narrative technique still used today.',
       stat: '\u2605 AVG 8.1 \u00b7 1920s-30s \u00b7 17 FILMS',
       mode: 'record',
       decadeFilter: '1920',
-      duration: 10000
+      duration: 7000
     },
     {
       id: 'ch2',
-      badge: 'CHAPTER 2 OF 5 \u00b7 THE GOLDEN AGE',
+      badge: 'CHAPTER 2 OF 6 \u00b7 THE GOLDEN AGE',
       title: "Hollywood's Unbroken Streak",
-      body: 'The 1940s-50s produced 112 top-rated films — the highest density of critically enduring classics per decade.',
+      body: 'The 1940s-50s delivered 112 enduring masterworks — the most per-decade concentration of critically sustained films in the dataset.',
       stat: '\u2605 AVG 8.2 \u00b7 1940s-50s \u00b7 112 FILMS',
       mode: 'record',
       decadeFilter: '1940',
-      duration: 10000
+      duration: 7000
     },
     {
       id: 'ch3',
-      badge: 'CHAPTER 3 OF 5 \u00b7 REVOLUTION',
-      title: 'The 1970s New Hollywood Peak',
-      body: "Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith — the 60s-70s yield the highest average rating in the dataset.",
-      stat: '\u2605 AVG 8.3 \u00b7 1960s-70s \u00b7 184 FILMS',
+      badge: 'CHAPTER 3 OF 6 \u00b7 THE REVOLUTION',
+      title: 'New Hollywood: Cinema at Its Peak',
+      body: "Coppola, Kubrick, Spielberg, Scorsese. The 60s-70s produced the dataset's highest average rating — a creative apex never quite equalled.",
+      stat: '\u2605 AVG 8.3 \u00b7 1960s-70s \u00b7 184 FILMS \u00b7 HIGHEST AVG',
       mode: 'record',
       decadeFilter: '1960',
-      duration: 10000
+      duration: 7000
     },
     {
       id: 'ch4',
-      badge: 'CHAPTER 4 OF 5 \u00b7 THE 1994 MIRACLE',
-      title: 'One Year Rewrote the Canon',
-      body: 'The 1980s-90s produced 404 films — the largest era cohort — anchored by Shawshank, Pulp Fiction, and Forrest Gump all landing in a single year.',
-      stat: '\u2605 AVG 8.1 \u00b7 1980s-90s \u00b7 404 FILMS',
+      badge: 'CHAPTER 4 OF 6 \u00b7 THE 1994 MIRACLE',
+      title: 'One Year. Three Timeless Films.',
+      body: 'The 1980s-90s dominate in sheer volume: 404 films. But 1994 stands apart — Shawshank, Pulp Fiction, Forrest Gump, all in a single year.',
+      stat: '\u2605 AVG 8.1 \u00b7 1980s-90s \u00b7 404 FILMS \u00b7 LARGEST ERA',
       mode: 'timeline',
       decadeFilter: '1980',
-      duration: 10000
+      duration: 7000
     },
     {
       id: 'ch5',
-      badge: 'CHAPTER 5 OF 5 \u00b7 THE GLOBAL WAVE',
-      title: 'Critics vs. Audiences: The Great Divide',
-      body: 'Modern cinema widens the gap: films with Metascore above 90 often sit below 8.5 on IMDb, revealing two completely different consensus systems.',
-      stat: 'METASCORE 90+ vs IMDb 9.0+ \u00b7 SEE GALAXY VIEW',
+      badge: 'CHAPTER 5 OF 6 \u00b7 THE GLOBAL WAVE',
+      title: 'Cinema Goes Worldwide',
+      body: 'The 2000s-10s brought the largest diversity shift: South Korea, Japan, Spain, and Mexico broke into the Top 1000 alongside Hollywood blockbusters.',
+      stat: '283 FILMS \u00b7 2000s-10s \u00b7 MOST INTERNATIONAL ERA',
+      mode: 'timeline',
+      decadeFilter: '2000',
+      duration: 7000
+    },
+    {
+      id: 'ch6',
+      badge: 'EPILOGUE \u00b7 TWO VERDICTS',
+      title: 'Critics vs. Audiences: A Permanent Split',
+      body: 'High Metascore rarely guarantees a high IMDb rating. The two systems reward fundamentally different qualities in a film.',
+      stat: 'METASCORE 90+ does NOT equal IMDb 9.0+',
       mode: 'galaxy',
       decadeFilter: null,
-      duration: 11000
+      duration: 8000
     }
   ];
 
