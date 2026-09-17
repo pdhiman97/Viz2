@@ -274,10 +274,13 @@ html, body {
   color: #FFFFFF;
 }
 
-[data-theme="light"] #doc-callout {
-  background: rgba(255, 255, 255, 0.98);
-  border: 1px solid #CBD5E1;
-  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.15);
+[data-theme="light"] #doc-callout-inner {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 20px 48px rgba(15, 23, 42, 0.14);
+}
+[data-theme="light"] #doc-callout-inner::before {
+  background: linear-gradient(90deg, #D97706, #EA580C, transparent);
 }
 [data-theme="light"] #doc-chapter-badge {
   color: #D97706;
@@ -285,7 +288,8 @@ html, body {
 }
 [data-theme="light"] #doc-callout-title { color: #0F172A; font-weight: 700; }
 [data-theme="light"] #doc-callout-body  { color: #334155; }
-[data-theme="light"] #doc-callout-stat  { color: #D97706; font-weight: 700; }
+[data-theme="light"] #doc-callout-stat  { color: #B45309; font-weight: 700; border-top: 1px solid #E2E8F0; }
+[data-theme="light"] .doc-spotlights   { border-top: 1px solid #E2E8F0; }
 [data-theme="light"] .doc-spotlight-heading { color: #64748B; font-weight: 700; }
 [data-theme="light"] .doc-spotlight-card {
   background: #F8FAFC;
@@ -296,6 +300,10 @@ html, body {
   background: #FFFFFF;
   border-color: #D97706;
   box-shadow: 0 4px 12px rgba(217, 119, 6, 0.15);
+}
+[data-theme="light"] .doc-spotlight-poster {
+  border: 1px solid #CBD5E1;
+  background: #E2E8F0;
 }
 [data-theme="light"] .doc-spotlight-title { color: #0F172A; font-weight: 700; }
 [data-theme="light"] .doc-spotlight-meta  { color: #475569; font-weight: 500; }
@@ -465,8 +473,7 @@ html, body {
 }
 
 [data-theme="light"] .film-dot {
-  stroke: rgba(15, 23, 42, 0.22);
-  stroke-width: 0.6px;
+  stroke: none;
 }
 [data-theme="light"] .film-dot.dimmed {
   opacity: 0.04 !important;
@@ -475,51 +482,49 @@ html, body {
 
 .film-dot.search-match {
   stroke: var(--accent) !important;
-  stroke-width: 2px !important;
+  stroke-width: 1.5px !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 .film-dot.selected {
   stroke: var(--hi) !important;
-  stroke-width: 2px !important;
+  stroke-width: 1.8px !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 
 .film-dot.director-highlight {
   stroke: #ffffff !important;
-  stroke-width: 2px !important;
+  stroke-width: 1.5px !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
 [data-theme="light"] .film-dot.director-highlight {
   stroke: #0F172A !important;
-  stroke-width: 2.2px !important;
+  stroke-width: 1.6px !important;
   opacity: 1 !important;
-  filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.3));
 }
 
 /* Constellation Lines */
 .constellation-line {
-  stroke-width: 1.8;
-  stroke-dasharray: 4 3;
+  stroke-width: 1.2;
+  stroke-dasharray: 3 3;
   fill: none;
   pointer-events: none;
   animation: lineGlow 1.8s ease-in-out infinite alternate;
 }
 [data-theme="dark"] .constellation-line {
-  stroke-opacity: 0.85;
+  stroke-opacity: 0.75;
 }
 [data-theme="light"] .constellation-line {
-  stroke: #0F172A !important;
-  stroke-width: 2.4 !important;
-  stroke-opacity: 0.95 !important;
-  filter: drop-shadow(0 1px 2px rgba(15, 23, 42, 0.2));
+  stroke: #475569 !important;
+  stroke-width: 1.2 !important;
+  stroke-opacity: 0.8 !important;
 }
 
 @keyframes lineGlow {
   0%   { stroke-opacity: 0.4; }
-  100% { stroke-opacity: 1; }
+  100% { stroke-opacity: 0.9; }
 }
 
 /* Axis Guides & Labels */
