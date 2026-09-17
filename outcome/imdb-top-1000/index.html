@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>One Record — A Century of Cinema</title>
+  <meta name="description" content="1,000 films. 100 years. An artistic exploration of IMDb's top-rated films across multiple spatial archetypes — Vinyl Record, Timeline Wave, and Critic vs Audience Galaxy.">
+  <meta name="theme-color" content="#0A0A0A">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+
+  <!-- Top Navigation & Control Bar -->
+  <header id="top-bar">
+    <div class="brand">
+      <span class="brand-title">ONE RECORD</span>
+      <span class="brand-sep">·</span>
+      <span class="brand-sub">A CENTURY OF CINEMA</span>
+    </div>
+
+    <!-- Mode Switcher -->
+    <nav id="mode-switcher" aria-label="Visual perspective">
+      <button class="mode-btn active" data-mode="record" title="Concentric vinyl rating tracks">
+        <span class="mode-glyph">◉</span>
+        <span class="mode-text">VINYL RECORD</span>
+      </button>
+      <button class="mode-btn" data-mode="timeline" title="Chronological soundwave timeline">
+        <span class="mode-glyph">〰</span>
+        <span class="mode-text">TIMELINE WAVE</span>
+      </button>
+      <button class="mode-btn" data-mode="galaxy" title="Critic consensus vs Audience rating">
+        <span class="mode-glyph">☩</span>
+        <span class="mode-text">CRITIC VS AUDIENCE</span>
+      </button>
+    </nav>
+
+    <!-- Omni Search Bar -->
+    <div id="search-box">
+      <span class="search-icon" aria-hidden="true">⚲</span>
+      <input type="text" id="omni-search" placeholder="Search film, director, actor..." autocomplete="off" spellcheck="false" aria-label="Search films by title, director, or actor">
+      <button id="search-clear" aria-label="Clear search query" title="Clear">×</button>
+      <span id="search-count" aria-live="polite"></span>
+    </div>
+  </header>
+
+  <!-- Editorial Narrative Lead (Generated via chart-narrative-crafter skill) -->
+  <aside id="narrative-lead" role="region" aria-label="Editorial takeaway">
+    <span class="narrative-badge">INSIGHT</span>
+    <span id="narrative-text">★ 9.3 PEAK TO ★ 7.6 BASELINE · Only 12 of 1,000 films surpass ★9.0, while 74% congregate tightly in the 7.6–8.1 band.</span>
+  </aside>
+
+  <!-- SVG Visualization Canvas -->
+  <svg id="record-svg" role="img" aria-label="Interactive artistic visualization of IMDb top 1000 films"></svg>
+
+  <!-- Hover Tooltip -->
+  <div id="tooltip" role="tooltip" aria-hidden="true"></div>
+
+  <!-- Film Detail Modal Overlay -->
+  <div id="film-overlay" role="dialog" aria-modal="true" aria-label="Film detail">
+    <div class="film-card">
+      <button class="close-btn" id="close-overlay" aria-label="Close detail card">×</button>
+      <div class="card-layout">
+        <div class="card-poster-wrap">
+          <img id="card-poster" src="" alt="" class="card-poster">
+        </div>
+        <div class="card-info">
+          <h2 id="card-title" class="card-title"></h2>
+          <div class="card-meta-row">
+            <span id="card-rating" class="card-rating"></span>
+            <span id="card-year" class="card-year"></span>
+            <span id="card-runtime" class="card-runtime"></span>
+            <span id="card-meta" class="card-meta"></span>
+          </div>
+          <div id="card-director" class="card-director"></div>
+          <div id="card-cast" class="card-cast"></div>
+          <div id="card-genre" class="card-genre"></div>
+          <p id="card-overview" class="card-overview"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right-Side Floating Filter Panel -->
+  <aside id="filters" aria-label="Filter panel">
+    <!-- Decade Section -->
+    <div class="filter-section">
+      <div class="filter-header">
+        <span class="filter-label">DECADE</span>
+        <button class="flt-btn--clear" id="clear-decade">RESET</button>
+      </div>
+      <div class="filter-grid" id="decade-filter">
+        <button class="flt-btn" data-decade="1920" style="--dc:#C8A96A">20s–30s</button>
+        <button class="flt-btn" data-decade="1940" style="--dc:#7AAF8E">40s–50s</button>
+        <button class="flt-btn" data-decade="1960" style="--dc:#D4734A">60s–70s</button>
+        <button class="flt-btn" data-decade="1980" style="--dc:#9B72CF">80s–90s</button>
+        <button class="flt-btn" data-decade="2000" style="--dc:#89C4DC">00s–10s</button>
+        <button class="flt-btn" data-decade="2020" style="--dc:#E2E2E2">2020s</button>
+      </div>
+    </div>
+
+    <!-- Genre Section -->
+    <div class="filter-section">
+      <div class="filter-header">
+        <span class="filter-label">GENRE</span>
+        <button class="flt-btn--clear" id="clear-genre">RESET</button>
+      </div>
+      <div class="filter-grid" id="genre-filter">
+        <!-- Dynamically injected by script.js -->
+      </div>
+    </div>
+
+    <!-- Runtime Section -->
+    <div class="filter-section">
+      <div class="filter-header">
+        <span class="filter-label">RUNTIME</span>
+        <button class="flt-btn--clear" id="clear-runtime">RESET</button>
+      </div>
+      <div class="filter-grid" id="runtime-filter">
+        <button class="flt-btn rt-flt-btn" data-runtime="short">&lt; 90 MIN</button>
+        <button class="flt-btn rt-flt-btn" data-runtime="standard">90–120 MIN</button>
+        <button class="flt-btn rt-flt-btn" data-runtime="long">120–150 MIN</button>
+        <button class="flt-btn rt-flt-btn" data-runtime="epic">150+ MIN</button>
+      </div>
+    </div>
+  </aside>
+
+</div>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
