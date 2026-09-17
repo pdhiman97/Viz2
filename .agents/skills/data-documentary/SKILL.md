@@ -1,6 +1,6 @@
 ---
 name: data-documentary
-description: Transform any data visualization into a multi-sensory, guided documentary tour featuring a segmented chapter scrubber, landmark entity spotlight cards, synthesized ambient audio, and choreographed ripple motion transitions.
+description: Transform any data visualization into an automated, chapter-based documentary tour featuring a segmented timeline scrubber, on-canvas landmark leader pins, fluid particle cascade transitions, and true pause/resume controls.
 ---
 
 # Data Documentary
@@ -10,10 +10,11 @@ description: Transform any data visualization into a multi-sensory, guided docum
 Most interactive data visualizations are built for active explorers who already understand the schema and know where to look. Casual or first-time viewers often feel overwhelmed, scan the surface, and miss the profound narratives buried within the data.
 
 The **Data Documentary** skill elevates any visualization into a **curated, cinematic story tour**. It acts like a documentary director, guiding the viewer through structured narrative chapters with:
-- **Segmented Chapter Scrubber**: An edge-to-edge, frame-synchronized timeline bar where progress fills segment by segment and transitions exactly when the line completes.
-- **Landmark Entity Spotlight Cards**: Mini-cards showcasing real flagship data records (with image thumbnails, metadata, and quick inspection triggers) directly within each chapter's narrative card.
-- **Synesthetic Web Audio Score**: Ambient documentary soundscapes (dual oscillator low-pass chord drones) and harmonic chapter transition chimes rendered in real-time via the native Web Audio API (zero audio files needed).
-- **Organic Spatial Ripple Motion**: Transitions that propagate outward in acoustic delay waves or chronological cascades rather than moving in rigid blocks.
+- **Segmented Chapter Scrubber**: An edge-to-edge timeline bar where progress fills segment by segment and transitions exactly when the line completes.
+- **True Pause/Resume & Dedicated Stop**: Pause freezes progress in-flight and keeps visual focus steady; resume continues seamlessly; stop resets to baseline.
+- **Fluid Particle Cascade Flight**: During layout and mode shifts, all data marks illuminate and stream across the viewport with organic spatial ripple delays, transforming chart shifts into visible particle choreography.
+- **On-Canvas Landmark Leader Pins**: Delicate floating flags (`[ ★ 9.3 · Film Title ]`) with dotted leader lines anchored directly to highlighted entities on the canvas.
+- **Stacked High-Visibility Landmark Cards**: Full movie titles, poster thumbnails, years, directors, and gold rating badges with zero ugly truncation.
 
 This skill is **visualization-type agnostic**: it works seamlessly across scatter plots, timelines, radial vinyl charts, geographic maps, network graphs, or hierarchical treemaps.
 
@@ -29,12 +30,8 @@ This skill is **visualization-type agnostic**: it works seamlessly across scatte
    - Key historical eras, statistical clusters, or provocative anomalies.
    - List of flagship records/entities per chapter (e.g., landmark films, key countries, record-breaking years) with metadata and thumbnail URLs.
 
-3. **Audio & Sensory Profile**:
-   - Soundscape preference: *(A) Warm Cinematic Drone + Harmonic Pentatonic Chimes*, *(B) Minimalist Tactile Clicks*, or *(C) Pure Silent Motion*.
-   - Mute state defaults and accessibility overrides.
-
-4. **Pacing Envelope**:
-   - Target duration per chapter (typically 6.0s – 8.0s for brisk, engaging retention).
+3. **Pacing Envelope**:
+   - Target duration per chapter (typically 6.5s – 8.0s for brisk, engaging retention).
 
 ---
 
@@ -51,18 +48,13 @@ The skill presents the user with **3 distinct narrative postures**:
 ### Option B: The Curated Exhibition Tour (≈ 50–60 seconds)
 - 6–7 chapters, 7s–8s each.
 - Explores origins, golden eras, paradigm shifts, global expansions, and final analytical epilogues.
-- Mini spotlight cards show 3 flagship records per chapter with poster thumbnails.
+- Mini spotlight cards show 3 flagship records per chapter with poster thumbnails and leader pins.
 - *Best for:* Portfolio showpieces, data journalism stories, conference exhibits.
 
 ### Option C: The Interactive Self-Guided Exploration
 - Chapters wait for user progression (or auto-advance on toggle).
 - Includes expanded analytical breakdowns and deeper entity inspection modals.
 - *Best for:* Educational walkthroughs and deep-dive analytical dashboards.
-
-**Clarification Prompts:**
-- *"Which pacing best fits your audience: Highlight Reel (35s) or Curated Exhibition (50s)?"*
-- *"Would you like to enable the real-time Web Audio ambient drone and chapter transition bells?"*
-- *"Which landmark entities in your dataset should be spotlighted as mini-cards during the tour?"*
 
 ---
 
@@ -90,10 +82,10 @@ The skill delivers a complete, production-grade documentary engine:
 
 ### 4b. UI Scaffolding & Components
 1. **Segmented Scrubber Bar (`#doc-scrubber`)**: $N$ equal track segments with animated `scaleX(0 → 1)` progress fills perfectly synchronized to chapter boundaries.
-2. **Gold Ambient Action Button (`#doc-play-btn`) & Sound Toggle (`#doc-sound-btn`)**: Prominent control bar with pulsing idle glow and mute control.
-3. **Editorial Floating Callout Card (`#doc-callout`)**: Frosted-glass panel positioned dynamically in least-dense screen quadrants, featuring the narrative headline, analytical takeaway, metric badge, and interactive entity spotlight mini-cards.
-4. **SVG Halo Aura Generator (`spotlightG`)**: Animated expanding shockwave rings (`.spotlight-pulse`) highlighting landmark dots on canvas.
-5. **Web Audio Synthesizer (`DocAudioEngine`)**: Pure code-generated ambient synth drone and pentatonic transition chords.
+2. **Controls (`#doc-controls-wrap`)**: Gold action button with true `▶ PLAY / ⏸ PAUSE / ▶ RESUME` states and a dedicated `⏹ STOP` button.
+3. **Editorial Floating Callout Card (`#doc-callout`)**: Frosted-glass panel positioned in a non-occluding safe quadrant, featuring the narrative headline, analytical takeaway, metric badge, and stacked movie spotlight mini-cards.
+4. **SVG Leader Pins & Focal Auras (`spotlightG`)**: Floating on-canvas flags with dotted lines and expanding pulse halos.
+5. **Fluid Particle Cascade**: Staggered D3 named transitions with `.doc-moving` illumination.
 
 ---
 
@@ -101,13 +93,12 @@ The skill delivers a complete, production-grade documentary engine:
 
 ### MUST ALWAYS:
 - **Synchronize scrubber progress 1:1 with chapter switches**: The progress fill within a chapter segment must reach exactly 100% at the precise moment the next chapter begins.
-- **Require user gesture for audio**: The Web Audio context must initialize/resume only upon clicking the "Play Story" or sound button to adhere to browser autoplay policies.
-- **Provide immediate keyboard interruptibility**: Pressing `Escape` or clicking `Pause` must instantly restore the visual state, clear audio drones, and reset filters.
+- **Keep mode transitions visible**: During layout changes, illuminate traveling marks so viewers clearly perceive the data transformation between coordinate spaces.
+- **Provide true pause & stop interruptibility**: Pausing must freeze timers and progress fills in place without resetting state; stopping or pressing `Escape` must cleanly restore the baseline.
 - **Anchor spotlight cards in real data**: Mini cards must display verified records, real thumbnail URLs, and lead to deeper entity inspection.
-- **Use lightweight stroke highlights over heavy filters**: Never apply SVG blur/glow filters to hundreds of data marks simultaneously; use lightweight stroke rings and CSS opacity to preserve 60 FPS.
+- **Position cards in guaranteed safe zones**: Never occlude active data clusters with editorial cards.
 
 ### MUST NEVER:
+- **Never snap or cut mode transitions instantly**: All coordinate changes must glide smoothly with easing curves.
+- **Never truncate entity titles unnecessarily**: Use stacked layouts with ample breathing room so names and metrics remain fully legible.
 - **Never auto-play on initial page load**: The visualization must load into standard exploratory mode first.
-- **Never trap or block user interaction**: Clicking any spotlight mini-card or chapter dot must immediately respond and update view states.
-- **Never obscure active data points**: Callout cards must dynamically shift to less-crowded viewport quadrants away from focused clusters.
-- **Never rely on external audio asset files**: Soundscapes must be synthesized dynamically using native Web Audio oscillators to prevent 404s, CORS blocks, or network latency.

@@ -492,38 +492,46 @@
 
     // Toggle scenery layers with smooth fade
     if (newMode === 'record') {
-      recordScenery.style('display', null).transition().duration(400).attr('opacity', 1);
-      labelG.style('display', null).transition().duration(400).attr('opacity', 1);
-      timelineScenery.transition().duration(250).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
-      galaxyScenery.transition().duration(250).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
+      recordScenery.style('display', null).transition('scenery').duration(400).attr('opacity', 1);
+      labelG.style('display', null).transition('scenery').duration(400).attr('opacity', 1);
+      timelineScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
+      galaxyScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
     } else if (newMode === 'timeline') {
-      recordScenery.transition().duration(250).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
-      labelG.transition().duration(250).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
-      timelineScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
-      galaxyScenery.transition().duration(250).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
+      recordScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
+      labelG.transition('scenery').duration(300).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
+      timelineScenery.style('display', null).attr('opacity', 0).transition('scenery').duration(400).attr('opacity', 1);
+      galaxyScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => galaxyScenery.style('display', 'none'));
     } else if (newMode === 'galaxy') {
-      recordScenery.transition().duration(250).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
-      labelG.transition().duration(250).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
-      timelineScenery.transition().duration(250).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
-      galaxyScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
+      recordScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => recordScenery.style('display', 'none'));
+      labelG.transition('scenery').duration(300).attr('opacity', 0).on('end', () => labelG.style('display', 'none'));
+      timelineScenery.transition('scenery').duration(300).attr('opacity', 0).on('end', () => timelineScenery.style('display', 'none'));
+      galaxyScenery.style('display', null).attr('opacity', 0).transition('scenery').duration(400).attr('opacity', 1);
+    }
+
+    // If in documentary mode, light up all dots during flight so travel path is visible
+    if (document.body.classList.contains('doc-playing')) {
+      document.body.classList.add('doc-moving');
+      setTimeout(() => {
+        document.body.classList.remove('doc-moving');
+      }, 1300);
     }
 
     // Animate all dots to new target coordinates with organic ripple delays
     dots.transition('move')
-      .duration(900)
+      .duration(1000)
       .delay(d => {
         if (newMode === 'record') {
           const pt = posRecord.get(d.id) || { x: cx, y: cy };
-          return Math.min(220, Math.hypot(pt.x - cx, pt.y - cy) * 0.4);
+          return Math.min(260, Math.hypot(pt.x - cx, pt.y - cy) * 0.45);
         } else if (newMode === 'timeline') {
-          return Math.min(240, ((d.y || 1995) - 1920) * 2.2);
+          return Math.min(280, ((d.y || 1995) - 1920) * 2.5);
         } else if (newMode === 'galaxy') {
           const ms = d.ms != null ? d.ms : 70;
-          return Math.min(240, (ms - 40) * 3.6);
+          return Math.min(280, (ms - 40) * 3.8);
         }
         return 0;
       })
-      .ease(d3.easeCubicOut)
+      .ease(d3.easeCubicInOut)
       .attr('cx', d => {
         if (newMode === 'record')   return (posRecord.get(d.id)   || { x: cx }).x;
         if (newMode === 'timeline') return (posTimeline.get(d.id) || { x: cx }).x;
@@ -942,11 +950,11 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     DATA DOCUMENTARY — Guided Story Tour Engine (Multi-Dimensional)
+     DATA DOCUMENTARY — Guided Story Tour Engine
      Features: Segmented Timeline Scrubber, True Pause/Resume & Dedicated Stop,
-               Soothing Multi-Voice Ambient Pad Synth & Crystal Glass Chimes,
-               Stacked Landmark Movie Spotlight Cards,
-               Organic Ripple Motion & Pulsing Focal Halo Rings.
+               Visible Particle Cascade Flight on Mode Transitions,
+               On-Canvas Animated Landmark Leader Pins & Focal Halos,
+               Stacked Movie Spotlight Cards with Full Visibility.
      ═══════════════════════════════════════════════════════════════════════════ */
 
   // ── Chapter Manifest with Landmark Spotlight Films ────────────────────────
@@ -1030,181 +1038,6 @@
     }
   ];
 
-  // ── Web Audio Synthesizer (Soothing Cinematic Pad Synth + Glass Chimes) ────
-  class DocAudioEngine {
-    constructor() {
-      this.ctx = null;
-      this.muted = false;
-      this.droneGain = null;
-      this.filter = null;
-      this.oscillators = [];
-      this.lfo = null;
-    }
-
-    init() {
-      if (this.ctx) return;
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return;
-      this.ctx = new AudioCtx();
-    }
-
-    startDrone() {
-      if (this.muted) return;
-      this.init();
-      if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      this.stopDrone();
-
-      const now = this.ctx.currentTime;
-
-      // Master low-pass filter with gentle resonance
-      this.filter = this.ctx.createBiquadFilter();
-      this.filter.type = 'lowpass';
-      this.filter.frequency.setValueAtTime(560, now);
-      this.filter.Q.setValueAtTime(1.1, now);
-
-      // Slow breathing LFO modulating the filter cutoff (ocean wave effect)
-      try {
-        this.lfo = this.ctx.createOscillator();
-        const lfoGain = this.ctx.createGain();
-        this.lfo.frequency.setValueAtTime(0.08, now); // 12-second slow wave
-        lfoGain.gain.setValueAtTime(140, now);
-        this.lfo.connect(lfoGain);
-        lfoGain.connect(this.filter.frequency);
-        this.lfo.start();
-      } catch (e) {}
-
-      // Master drone gain
-      this.droneGain = this.ctx.createGain();
-      this.droneGain.gain.setValueAtTime(0.0001, now);
-      this.droneGain.gain.exponentialRampToValueAtTime(0.065, now + 2.0);
-
-      // 4-voice soothing ambient pad chord (C major 9th warmth: C3, G3, E4, B4)
-      const freqs = [130.81, 196.00, 329.63, 493.88];
-      const types = ['sine', 'triangle', 'sine', 'sine'];
-
-      this.oscillators = freqs.map((f, i) => {
-        const osc = this.ctx.createOscillator();
-        const vGain = this.ctx.createGain();
-        osc.type = types[i] || 'sine';
-        osc.frequency.setValueAtTime(f, now);
-        // Subtle chorus detuning
-        osc.detune.setValueAtTime((i % 2 === 0 ? 1 : -1) * (i * 2 + 1), now);
-
-        vGain.gain.setValueAtTime(0.25, now);
-        osc.connect(vGain);
-        vGain.connect(this.filter);
-        osc.start();
-        return osc;
-      });
-
-      this.filter.connect(this.droneGain);
-      this.droneGain.connect(this.ctx.destination);
-    }
-
-    duckDrone() {
-      if (this.droneGain && this.ctx) {
-        try {
-          const now = this.ctx.currentTime;
-          this.droneGain.gain.setValueAtTime(this.droneGain.gain.value, now);
-          this.droneGain.gain.exponentialRampToValueAtTime(0.015, now + 0.4);
-        } catch (e) {}
-      }
-    }
-
-    unduckDrone() {
-      if (this.droneGain && this.ctx && !this.muted) {
-        try {
-          const now = this.ctx.currentTime;
-          this.droneGain.gain.setValueAtTime(this.droneGain.gain.value, now);
-          this.droneGain.gain.exponentialRampToValueAtTime(0.065, now + 0.6);
-        } catch (e) {}
-      }
-    }
-
-    stopDrone() {
-      if (this.droneGain && this.ctx) {
-        try {
-          const now = this.ctx.currentTime;
-          this.droneGain.gain.setValueAtTime(this.droneGain.gain.value, now);
-          this.droneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
-          const oscs = this.oscillators;
-          const l = this.lfo;
-          setTimeout(() => {
-            oscs.forEach(o => { try { o.stop(); o.disconnect(); } catch (e) {} });
-            if (l) { try { l.stop(); l.disconnect(); } catch (e) {} }
-          }, 700);
-          this.oscillators = [];
-          this.lfo = null;
-        } catch (e) {}
-      }
-    }
-
-    playChapterTransition(chIdx) {
-      if (this.muted) return;
-      this.init();
-      if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-
-      const now = this.ctx.currentTime;
-      // Soothing pentatonic glass chime pairs (warm, soft acoustic bells)
-      const chimeChords = [
-        [523.25, 659.25], // C5, E5
-        [587.33, 783.99], // D5, G5
-        [659.25, 880.00], // E5, A5
-        [783.99, 987.77], // G5, B5
-        [880.00, 1046.50], // A5, C6
-        [659.25, 783.99], // E5, G5
-        [523.25, 783.99]  // C5, G5
-      ];
-      const notes = chimeChords[chIdx % chimeChords.length];
-
-      notes.forEach((freq, i) => {
-        // Fundamental
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + i * 0.12);
-
-        gain.gain.setValueAtTime(0.0001, now + i * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.024, now + i * 0.12 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 2.2);
-
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start(now + i * 0.12);
-        osc.stop(now + i * 0.12 + 2.3);
-
-        // Soft bell overtone (2.76x frequency at low volume for crystal resonance)
-        const overtone = this.ctx.createOscillator();
-        const oGain = this.ctx.createGain();
-        overtone.type = 'sine';
-        overtone.frequency.setValueAtTime(freq * 2.76, now + i * 0.12);
-
-        oGain.gain.setValueAtTime(0.0001, now + i * 0.12);
-        oGain.gain.exponentialRampToValueAtTime(0.006, now + i * 0.12 + 0.015);
-        oGain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.12 + 1.2);
-
-        overtone.connect(oGain);
-        oGain.connect(this.ctx.destination);
-        overtone.start(now + i * 0.12);
-        overtone.stop(now + i * 0.12 + 1.3);
-      });
-    }
-
-    toggleMute() {
-      this.muted = !this.muted;
-      if (this.muted) {
-        this.stopDrone();
-      } else {
-        if (docTourState === 'playing') this.startDrone();
-      }
-      return this.muted;
-    }
-  }
-
-  const docAudio = new DocAudioEngine();
-
   // ── State Management ──────────────────────────────────────────────────────
   let docTourState        = 'idle'; // 'idle' | 'playing' | 'paused'
   let docCurrentChIdx     = -1;
@@ -1217,8 +1050,6 @@
   const docPlayIcon     = document.getElementById('doc-play-icon');
   const docPlayLabel    = document.getElementById('doc-play-label');
   const docStopBtn      = document.getElementById('doc-stop-btn');
-  const docSoundBtn     = document.getElementById('doc-sound-btn');
-  const docSoundIcon    = document.getElementById('doc-sound-icon');
   const docScrubber     = document.getElementById('doc-scrubber');
   const docSegmentsWrap = document.getElementById('doc-segments-container');
   const docCallout      = document.getElementById('doc-callout');
@@ -1271,15 +1102,6 @@
     });
   }
 
-  // ── Sound Toggle Button Listener ─────────────────────────────────────────
-  if (docSoundBtn) {
-    docSoundBtn.addEventListener('click', () => {
-      const isMuted = docAudio.toggleMute();
-      docSoundBtn.classList.toggle('muted', isMuted);
-      docSoundIcon.textContent = isMuted ? '🔇' : '🔊';
-    });
-  }
-
   // ── Coordinates Getter Helper ────────────────────────────────────────────
   function getFilmCoords(id) {
     if (currentMode === 'timeline') return posTimeline.get(id) || { x: cx, y: cy };
@@ -1287,14 +1109,14 @@
     return posRecord.get(id) || { x: cx, y: cy };
   }
 
-  // ── Render Spotlight Halos on SVG Canvas ─────────────────────────────────
+  // ── Render Spotlight Halos & On-Canvas Leader Pins ────────────────────────
   function renderSpotlightHalos(filmIds) {
     spotlightG.selectAll('*').remove();
     dots.classed('doc-spotlight-dot', false);
 
     if (!filmIds || !filmIds.length) return;
 
-    filmIds.forEach(fid => {
+    filmIds.forEach((fid, idx) => {
       const f = filmsById[fid];
       if (!f) return;
 
@@ -1303,11 +1125,48 @@
       const pos = getFilmCoords(fid);
       if (!pos) return;
 
+      // Pulsing Gold Aura Ring
       spotlightG.append('circle')
         .attr('class', 'spotlight-pulse')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
         .attr('r', 8);
+
+      // On-Canvas Floating Leader Flag / Badge
+      const pinG = spotlightG.append('g').attr('class', 'doc-leader-pin');
+      const angle = (idx % 2 === 0) ? -Math.PI / 4 : (3 * Math.PI) / 4;
+      const dist = 32;
+      const targetX = pos.x + Math.cos(angle) * dist;
+      const targetY = pos.y + Math.sin(angle) * dist;
+
+      // Dotted Leader Line
+      pinG.append('line')
+        .attr('class', 'doc-leader-line')
+        .attr('x1', pos.x)
+        .attr('y1', pos.y)
+        .attr('x2', targetX)
+        .attr('y2', targetY);
+
+      // Leader Tag Label
+      const tagText = `\u2605 ${Number(f.r).toFixed(1)} \u00b7 ${f.t}`;
+      const charWidth = 6.2;
+      const tagWidth = Math.min(180, tagText.length * charWidth + 14);
+      const tagHeight = 18;
+      const rectX = targetX > pos.x ? targetX : targetX - tagWidth;
+      const rectY = targetY - tagHeight / 2;
+
+      pinG.append('rect')
+        .attr('class', 'doc-leader-badge-bg')
+        .attr('x', rectX)
+        .attr('y', rectY)
+        .attr('width', tagWidth)
+        .attr('height', tagHeight);
+
+      pinG.append('text')
+        .attr('class', 'doc-leader-badge-text')
+        .attr('x', rectX + 7)
+        .attr('y', rectY + 12)
+        .text(tagText.length > 24 ? tagText.slice(0, 23) + '\u2026' : tagText);
     });
   }
 
@@ -1327,7 +1186,6 @@
     tooltipEl.style.display = 'none';
     overlay.classList.remove('visible');
 
-    docAudio.startDrone();
     docGoToChapter(startIdx);
   }
 
@@ -1357,8 +1215,6 @@
     docPlayIcon.textContent = '\u25b6';
     docPlayLabel.textContent = 'RESUME';
     docPlayBtn.className = 'paused';
-
-    docAudio.duckDrone();
   }
 
   // ── Resume Tour (True Resume) ────────────────────────────────────────────
@@ -1370,8 +1226,6 @@
     docPlayIcon.textContent = '\u23f8';
     docPlayLabel.textContent = 'PAUSE';
     docPlayBtn.className = 'playing';
-
-    docAudio.unduckDrone();
 
     const currentCh = DOC_CHAPTERS[docCurrentChIdx];
     if (!currentCh) {
@@ -1411,7 +1265,6 @@
       docPlayLabel.textContent = 'PAUSE';
       docPlayBtn.className = 'playing';
       if (docStopBtn) docStopBtn.style.display = 'flex';
-      docAudio.unduckDrone();
       docGoToChapter(idx);
     }
   }
@@ -1430,9 +1283,9 @@
 
     docScrubber.classList.remove('visible');
     document.body.classList.remove('doc-playing');
+    document.body.classList.remove('doc-moving');
 
     docHideCallout();
-    docAudio.stopDrone();
 
     spotlightG.selectAll('*').remove();
     dots.classed('doc-focus', false).classed('doc-spotlight-dot', false);
@@ -1464,9 +1317,6 @@
     const ch = DOC_CHAPTERS[idx];
     docChapterStartTime = Date.now();
     docRemainingMs = ch.duration;
-
-    // Soothing crystal chime for chapter transition
-    docAudio.playChapterTransition(idx);
 
     // Update segmented scrubber states
     DOC_CHAPTERS.forEach((_, i) => {
@@ -1503,7 +1353,7 @@
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
 
-    // Switch visualization mode (runs 900ms named transition)
+    // Switch visualization mode (runs 1000ms transition with glowing particles)
     if (ch.mode !== currentMode) {
       switchMode(ch.mode);
     } else {
@@ -1511,6 +1361,8 @@
     }
 
     // Step 2: After mode transition settles: apply focus and show landmark cards
+    const settleDelay = (ch.mode !== currentMode) ? 850 : 250;
+
     setTimeout(() => {
       if (docTourState === 'idle') return;
 
@@ -1527,7 +1379,7 @@
         ch.decadeFilter ? d.decadeGroup === ch.decadeFilter : true
       );
 
-      // Render pulsing halo rings on SVG for spotlighted films
+      // Render pulsing halo rings & on-canvas leader pins
       renderSpotlightHalos(ch.spotlightFilms || []);
 
       // Populate Landmark Mini-Cards (Stacked for full readability)
@@ -1593,15 +1445,12 @@
         }
       }, ch.duration);
 
-    }, 550);
+    }, settleDelay);
   }
 
   // ── Position Callout in guaranteed non-overlapping safe zone ──────────────
   function docPositionCallout(idx) {
     const margin = 28;
-    const vW = window.innerWidth;
-
-    // The left edge (top: 68px, left: 28px) is clear in Record, Timeline (right-skewed eras), and Galaxy
     docCallout.style.left = margin + 'px';
     docCallout.style.top  = '68px';
   }

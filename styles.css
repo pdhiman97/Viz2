@@ -1009,7 +1009,7 @@ html, body {
   flex-shrink: 0;
 }
 
-/* ── Animated Spotlight Halo Rings on SVG ────────────────────────── */
+/* ── Animated Spotlight Halo Rings & On-Canvas Leader Pins ───────── */
 .spotlight-pulse {
   fill: none;
   stroke: #D4A853;
@@ -1031,16 +1031,53 @@ html, body {
   }
 }
 
-/* ── Documentary Focus: Dimming & Canvas Lift ────────────────────── */
+/* Floating on-canvas landmark pins pointing to dots */
+.doc-leader-pin {
+  pointer-events: none;
+  opacity: 0;
+  animation: leaderPinFade 0.6s ease-out forwards;
+}
+@keyframes leaderPinFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.doc-leader-line {
+  stroke: rgba(212, 168, 83, 0.6);
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+  fill: none;
+}
+.doc-leader-badge-bg {
+  fill: rgba(10, 10, 10, 0.88);
+  stroke: rgba(212, 168, 83, 0.5);
+  stroke-width: 1;
+  rx: 3px;
+}
+.doc-leader-badge-text {
+  font-family: var(--font);
+  font-size: 9px;
+  font-weight: 700;
+  fill: #F0D090;
+  letter-spacing: 0.06em;
+}
+
+/* ── Documentary Focus: Dimming, Motion & Canvas Lift ────────────── */
 body.doc-playing .film-dot {
   will-change: transform, opacity;
-  transition: opacity 0.5s ease !important;
+  transition: opacity 0.4s ease !important;
 }
-body.doc-playing .film-dot:not(.doc-focus) {
+
+/* Visible Particle Cascade during mode switches: all dots glow while traveling */
+body.doc-playing.doc-moving .film-dot {
+  opacity: 0.65 !important;
+  stroke: none !important;
+}
+
+body.doc-playing:not(.doc-moving) .film-dot:not(.doc-focus) {
   opacity: 0.03 !important;
   pointer-events: none !important;
 }
-body.doc-playing .film-dot.doc-focus {
+body.doc-playing:not(.doc-moving) .film-dot.doc-focus {
   opacity: 1 !important;
   stroke: rgba(137, 196, 220, 0.35) !important;
   stroke-width: 0.8px !important;
@@ -1048,7 +1085,7 @@ body.doc-playing .film-dot.doc-focus {
 body.doc-playing .film-dot.doc-spotlight-dot {
   opacity: 1 !important;
   stroke: #D4A853 !important;
-  stroke-width: 2px !important;
+  stroke-width: 2.2px !important;
 }
 
 /* Shift SVG canvas up when scrubber bar is visible so bottom axes aren't cropped */
