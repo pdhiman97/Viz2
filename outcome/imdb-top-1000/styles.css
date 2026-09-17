@@ -163,8 +163,7 @@ html, body {
   border-color: rgba(0, 0, 0, 0.25);
 }
 
-#theme-toggle-icon,
-#sfx-toggle-icon {
+#theme-toggle-icon {
   font-size: 11px;
   line-height: 1;
 }

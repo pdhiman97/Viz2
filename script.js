@@ -277,7 +277,7 @@
 
   // ── Mode 2: Timeline Wave Coordinates ──
   const timePadX = 72;
-  const timePadYTop = 55;
+  const timePadYTop = 85;
   const timePadYBottom = 88;
   const timeX = d3.scaleLinear()
     .domain([1920, 2020])
@@ -306,7 +306,7 @@
 
   // ── Mode 3: Critic vs Audience Galaxy Coordinates ──
   const galPadX = 75;
-  const galPadYTop = 55;
+  const galPadYTop = 85;
   const galPadYBottom = 88;
   const galX = d3.scaleLinear()
     .domain([40, 100])
@@ -452,11 +452,6 @@
       .text(`★ ${rtg.toFixed(1)}`);
   });
 
-  timelineScenery.append('text')
-    .attr('x', timePadX).attr('y', topBarH + timePadYTop - 20)
-    .attr('class', 'quadrant-label')
-    .text('CHRONOLOGICAL WAVE · 1920 → 2020 (RATING ON Y-AXIS)');
-
   // ── Critic vs Audience Galaxy Scenery ──
   const metaTicks = [40, 50, 60, 70, 80, 90, 100];
   metaTicks.forEach(ms => {
@@ -485,16 +480,11 @@
       .text(`★ ${rtg.toFixed(1)}`);
   });
 
-  // Quadrant Labels - positioned safely in outer margins to prevent overlapping with film dots
+  // Quadrant Labels - positioned cleanly on the right side margins
   galaxyScenery.append('text')
     .attr('x', canvasW - galPadX).attr('y', topBarH + galPadYTop - 18)
     .attr('text-anchor', 'end').attr('class', 'quadrant-label')
     .text('UNIVERSAL MASTERPIECES (CRITIC 100 · AUDIENCE 9.0+)');
-
-  galaxyScenery.append('text')
-    .attr('x', galPadX).attr('y', topBarH + galPadYTop - 18)
-    .attr('text-anchor', 'start').attr('class', 'quadrant-label')
-    .text('AUDIENCE CULT FAVORITES (HIGH RATING / MODEST CRITIC)');
 
   galaxyScenery.append('text')
     .attr('x', canvasW - galPadX).attr('y', topBarH + canvasH - galPadYBottom + 44)
@@ -547,124 +537,6 @@
     .attr('font-size', '9px').attr('font-family', CF2)
     .attr('letter-spacing', '0.12em')
     .text('SIZE = IMDb RATING (★ 7.6 → ★ 9.3) · COLOUR = DECADE · DISTANCE FROM CENTRE = RATING');
-
-  /* ── 8b. MOTION CHOREOGRAPHER: INTERACTIVE AUDIO SYNTHESIZER ─────────────── */
-  const SoundFX = (function() {
-    let ctx = null;
-    let enabled = (function() {
-      try { return localStorage.getItem('viz_sfx') !== 'off'; } catch (e) { return true; }
-    })();
-
-    function getCtx() {
-      if (!ctx && (window.AudioContext || window.webkitAudioContext)) {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        ctx = new AudioCtx();
-      }
-      if (ctx && ctx.state === 'suspended') {
-        ctx.resume().catch(() => {});
-      }
-      return ctx;
-    }
-
-    return {
-      isEnabled() { return enabled; },
-      toggle() {
-        enabled = !enabled;
-        try { localStorage.setItem('viz_sfx', enabled ? 'on' : 'off'); } catch (e) {}
-        updateAudioBtnUI();
-        if (enabled) {
-          this.playFilterPulse(580);
-        }
-        return enabled;
-      },
-      playModeSwitch(mode) {
-        if (!enabled) return;
-        const c = getCtx();
-        if (!c) return;
-        const now = c.currentTime;
-        const baseFreq = mode === 'record' ? 220 : (mode === 'timeline' ? 330 : 440);
-        [baseFreq, baseFreq * 1.5].forEach((freq, idx) => {
-          const osc = c.createOscillator();
-          const gain = c.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.04);
-          osc.frequency.exponentialRampToValueAtTime(freq * 1.25, now + 0.35);
-
-          gain.gain.setValueAtTime(0.05, now + idx * 0.04);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
-
-          osc.connect(gain);
-          gain.connect(c.destination);
-          osc.start(now + idx * 0.04);
-          osc.stop(now + 0.5);
-        });
-      },
-      playFilterPulse(customFreq = null) {
-        if (!enabled) return;
-        const c = getCtx();
-        if (!c) return;
-        const now = c.currentTime;
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(customFreq || 520, now);
-        osc.frequency.exponentialRampToValueAtTime(customFreq ? customFreq * 0.8 : 380, now + 0.08);
-
-        gain.gain.setValueAtTime(0.045, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
-
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      },
-      playDotHover(rating) {
-        if (!enabled) return;
-        const c = getCtx();
-        if (!c) return;
-        const now = c.currentTime;
-        const osc = c.createOscillator();
-        const gain = c.createGain();
-        osc.type = 'sine';
-        const freq = 320 + Math.max(0, (rating - 7.6)) * 260;
-        osc.frequency.setValueAtTime(freq, now);
-
-        gain.gain.setValueAtTime(0.03, now);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.07);
-
-        osc.connect(gain);
-        gain.connect(c.destination);
-        osc.start(now);
-        osc.stop(now + 0.08);
-      }
-    };
-  })();
-
-  function updateAudioBtnUI() {
-    const sfxBtn = document.getElementById('sfx-toggle-btn');
-    const sfxIcon = document.getElementById('sfx-toggle-icon');
-    const sfxLabel = document.getElementById('sfx-toggle-label');
-    if (!sfxBtn || !sfxIcon || !sfxLabel) return;
-    if (SoundFX.isEnabled()) {
-      sfxIcon.textContent = '🔊';
-      sfxLabel.textContent = 'AUDIO';
-      sfxBtn.classList.remove('muted');
-      sfxBtn.setAttribute('title', 'Interactive Audio Enabled (Click to Mute)');
-    } else {
-      sfxIcon.textContent = '🔇';
-      sfxLabel.textContent = 'MUTED';
-      sfxBtn.classList.add('muted');
-      sfxBtn.setAttribute('title', 'Interactive Audio Muted (Click to Enable)');
-    }
-  }
-  updateAudioBtnUI();
-
-  const sfxToggleBtn = document.getElementById('sfx-toggle-btn');
-  if (sfxToggleBtn) {
-    sfxToggleBtn.addEventListener('click', () => {
-      SoundFX.toggle();
-    });
-  }
 
   /* ── 8c. CHART NARRATIVE CRAFTER: DYNAMIC EDITORIAL HUD ──────────────────── */
   function updateNarrativeHUD(mode = currentMode) {
@@ -744,9 +616,6 @@
   function switchMode(newMode) {
     if (newMode === currentMode) return;
     currentMode = newMode;
-
-    // Trigger sonic pulse
-    SoundFX.playModeSwitch(newMode);
 
     // Update active tab button
     document.querySelectorAll('.mode-btn').forEach(btn => {
@@ -897,9 +766,6 @@
     if (!isFilmActive(d)) return;
     hoveredDotEl = this;
     hoveredFilm  = d;
-
-    // Trigger Motion Choreographer melodic micro-pulse
-    SoundFX.playDotHover(d.r || 8.0);
 
     // No raise(), no radius change, no stroke — just glow
     d3.select(this)
@@ -1135,7 +1001,6 @@
   });
 
   searchClear.addEventListener('click', () => {
-    SoundFX.playFilterPulse(400);
     searchInput.value = '';
     searchQuery = '';
     searchClear.classList.remove('visible');
@@ -1147,7 +1012,6 @@
 
   document.querySelectorAll('#decade-filter .flt-btn[data-decade]').forEach(btn => {
     btn.addEventListener('click', () => {
-      SoundFX.playFilterPulse(520);
       const dec = btn.getAttribute('data-decade');
       if (activeDecades.has(dec)) { activeDecades.delete(dec); btn.classList.remove('active'); }
       else                        { activeDecades.add(dec);    btn.classList.add('active'); }
@@ -1156,7 +1020,6 @@
   });
 
   document.getElementById('clear-decade').addEventListener('click', () => {
-    SoundFX.playFilterPulse(420);
     activeDecades.clear();
     document.querySelectorAll('#decade-filter .flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
@@ -1176,7 +1039,6 @@
     genreFilterEl.appendChild(btn);
 
     btn.addEventListener('click', () => {
-      SoundFX.playFilterPulse(560);
       if (activeGenres.has(genre)) { activeGenres.delete(genre); btn.classList.remove('active'); }
       else                         { activeGenres.add(genre);    btn.classList.add('active'); }
       applyFilters();
@@ -1184,7 +1046,6 @@
   });
 
   document.getElementById('clear-genre').addEventListener('click', () => {
-    SoundFX.playFilterPulse(420);
     activeGenres.clear();
     document.querySelectorAll('.genre-flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
@@ -1194,7 +1055,6 @@
 
   document.querySelectorAll('#runtime-filter .rt-flt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      SoundFX.playFilterPulse(500);
       const rtCat = btn.getAttribute('data-runtime');
       if (activeRuntimes.has(rtCat)) { activeRuntimes.delete(rtCat); btn.classList.remove('active'); }
       else                           { activeRuntimes.add(rtCat);    btn.classList.add('active'); }
@@ -1203,7 +1063,6 @@
   });
 
   document.getElementById('clear-runtime').addEventListener('click', () => {
-    SoundFX.playFilterPulse(420);
     activeRuntimes.clear();
     document.querySelectorAll('#runtime-filter .rt-flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
