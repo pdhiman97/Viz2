@@ -10,17 +10,197 @@
 (function () {
   'use strict';
 
-  /* ── 1. COLOUR PALETTES ─────────────────────────────────────────────────── */
+  /* ── 1. COLOUR PALETTES (PALETTE STORYTELLER) ─────────────────────────── */
 
-  const DECADE_COLOR = {
-    '1920': '#C8A96A', '1930': '#C8A96A',
-    '1940': '#7AAF8E', '1950': '#7AAF8E',
-    '1960': '#D4734A', '1970': '#D4734A',
-    '1980': '#9B72CF', '1990': '#9B72CF',
-    '2000': '#89C4DC', '2010': '#89C4DC',
-    '2020': '#E2E2E2',
-    'unknown': '#4A4A4A'
+  const PALETTES = {
+    'golden-age': {
+      id: 'golden-age',
+      name: '35mm Golden Age',
+      theme: {
+        bg: '#0A0A0A',
+        panel: 'rgba(14, 14, 14, 0.90)',
+        hi: '#F0F0F0',
+        mid: '#AAAAAA',
+        lo: '#666666',
+        accent: '#D4A853',
+        glow: 'rgba(212, 168, 83, 0.35)'
+      },
+      swatchPreview: ['#D4A853', '#E07A5F', '#81B29A'],
+      decades: {
+        '1920': '#C8A96A', '1930': '#C8A96A',
+        '1940': '#7AAF8E', '1950': '#7AAF8E',
+        '1960': '#D4734A', '1970': '#D4734A',
+        '1980': '#9B72CF', '1990': '#9B72CF',
+        '2000': '#89C4DC', '2010': '#89C4DC',
+        '2020': '#E2E2E2', 'unknown': '#4A4A4A'
+      },
+      genres: {
+        'Drama':     '#D4A853',
+        'Action':    '#E07A5F',
+        'Comedy':    '#F2CC8F',
+        'Crime':     '#C86D51',
+        'Biography': '#B8A388',
+        'Animation': '#81B29A',
+        'Adventure': '#3D5A80',
+        'Mystery':   '#9B72CF',
+        'Horror':    '#A44A3F',
+        'Western':   '#C48B47',
+        'Film-Noir': '#C4A482',
+        'Fantasy':   '#A060D0',
+        'Family':    '#80D090',
+        'Thriller':  '#8060B0',
+        'Sci-Fi':    '#98C1D9',
+        'Romance':   '#D06080',
+        'History':   '#C09050',
+        'War':       '#708060',
+        'Music':     '#E050A0',
+        'Musical':   '#E060D0',
+        'Sport':     '#60C050'
+      }
+    },
+    'cyber-neon': {
+      id: 'cyber-neon',
+      name: 'Cyber Neon',
+      theme: {
+        bg: '#060810',
+        panel: 'rgba(10, 14, 26, 0.92)',
+        hi: '#F0F4FF',
+        mid: '#8DA9C4',
+        lo: '#4B5E78',
+        accent: '#00F5D4',
+        glow: 'rgba(0, 245, 212, 0.35)'
+      },
+      swatchPreview: ['#00F5D4', '#F72585', '#7209B7'],
+      decades: {
+        '1920': '#4CC9F0', '1930': '#4CC9F0',
+        '1940': '#00F5D4', '1950': '#00F5D4',
+        '1960': '#7209B7', '1970': '#7209B7',
+        '1980': '#F72585', '1990': '#F72585',
+        '2000': '#4361EE', '2010': '#4361EE',
+        '2020': '#FEE440', 'unknown': '#2B2D42'
+      },
+      genres: {
+        'Drama':     '#00F5D4',
+        'Action':    '#7209B7',
+        'Comedy':    '#FEE440',
+        'Crime':     '#F72585',
+        'Biography': '#B5179E',
+        'Animation': '#06D6A0',
+        'Adventure': '#4CC9F0',
+        'Mystery':   '#9B5DE5',
+        'Horror':    '#E63946',
+        'Western':   '#FF9F1C',
+        'Film-Noir': '#8338EC',
+        'Fantasy':   '#FF006E',
+        'Family':    '#3A86FF',
+        'Thriller':  '#FB5607',
+        'Sci-Fi':    '#4361EE',
+        'Romance':   '#FF5400',
+        'History':   '#FFD166',
+        'War':       '#38B000',
+        'Music':     '#FF70A6',
+        'Musical':   '#70D6FF',
+        'Sport':     '#FF9770'
+      }
+    },
+    'vintage-noir': {
+      id: 'vintage-noir',
+      name: 'Criterion Noir',
+      theme: {
+        bg: '#0D0D11',
+        panel: 'rgba(18, 18, 24, 0.92)',
+        hi: '#F1FAEE',
+        mid: '#A8DADC',
+        lo: '#6C757D',
+        accent: '#E63946',
+        glow: 'rgba(230, 57, 70, 0.35)'
+      },
+      swatchPreview: ['#E63946', '#457B9D', '#DDA15E'],
+      decades: {
+        '1920': '#DDA15E', '1930': '#DDA15E',
+        '1940': '#A8DADC', '1950': '#A8DADC',
+        '1960': '#E63946', '1970': '#E63946',
+        '1980': '#457B9D', '1990': '#457B9D',
+        '2000': '#B5838D', '2010': '#B5838D',
+        '2020': '#F1FAEE', 'unknown': '#353535'
+      },
+      genres: {
+        'Drama':     '#E63946',
+        'Action':    '#A8DADC',
+        'Comedy':    '#DDA15E',
+        'Crime':     '#F1FAEE',
+        'Biography': '#E5989B',
+        'Animation': '#B5838D',
+        'Adventure': '#457B9D',
+        'Mystery':   '#6D6875',
+        'Horror':    '#9B2226',
+        'Western':   '#BC6C25',
+        'Film-Noir': '#E0AAFF',
+        'Fantasy':   '#7B2CBF',
+        'Family':    '#84A59D',
+        'Thriller':  '#540B0E',
+        'Sci-Fi':    '#6D6875',
+        'Romance':   '#FFB4A2',
+        'History':   '#CB997E',
+        'War':       '#6B705C',
+        'Music':     '#D88C9A',
+        'Musical':   '#F4ACB7',
+        'Sport':     '#99D98C'
+      }
+    },
+    'solar-flare': {
+      id: 'solar-flare',
+      name: 'Solar Flare',
+      theme: {
+        bg: '#0F0A0D',
+        panel: 'rgba(22, 14, 18, 0.92)',
+        hi: '#FFF3E2',
+        mid: '#E0A96D',
+        lo: '#7A5C61',
+        accent: '#FFB703',
+        glow: 'rgba(255, 183, 3, 0.35)'
+      },
+      swatchPreview: ['#FFB703', '#FB8500', '#00B4D8'],
+      decades: {
+        '1920': '#FFB703', '1930': '#FFB703',
+        '1940': '#06D6A0', '1950': '#06D6A0',
+        '1960': '#FB8500', '1970': '#FB8500',
+        '1980': '#E63946', '1990': '#E63946',
+        '2000': '#00B4D8', '2010': '#00B4D8',
+        '2020': '#FFD166', 'unknown': '#3D343A'
+      },
+      genres: {
+        'Drama':     '#FFB703',
+        'Action':    '#E63946',
+        'Comedy':    '#FFD166',
+        'Crime':     '#FB8500',
+        'Biography': '#DDA15E',
+        'Animation': '#06D6A0',
+        'Adventure': '#90E0EF',
+        'Mystery':   '#7209B7',
+        'Horror':    '#D00000',
+        'Western':   '#DC2F02',
+        'Film-Noir': '#E85D04',
+        'Fantasy':   '#F48C06',
+        'Family':    '#FAA307',
+        'Thriller':  '#9D0208',
+        'Sci-Fi':    '#00B4D8',
+        'Romance':   '#FF5400',
+        'History':   '#E76F51',
+        'War':       '#588157',
+        'Music':     '#F72585',
+        'Musical':   '#B5179E',
+        'Sport':     '#52B788'
+      }
+    }
   };
+
+  let activePaletteId = (function() {
+    try { return localStorage.getItem('viz_palette') || 'golden-age'; } catch (e) { return 'golden-age'; }
+  })();
+
+  const DECADE_COLOR = PALETTES[activePaletteId]?.decades || PALETTES['golden-age'].decades;
+  const GENRE_COLOR  = PALETTES[activePaletteId]?.genres  || PALETTES['golden-age'].genres;
 
   const DECADE_GROUP = {
     '1920': '1920', '1930': '1920',
@@ -29,30 +209,6 @@
     '1980': '1980', '1990': '1980',
     '2000': '2000', '2010': '2000',
     '2020': '2020', 'unknown': 'unknown'
-  };
-
-  const GENRE_COLOR = {
-    'Drama':     '#D4A853',
-    'Action':    '#E07030',
-    'Comedy':    '#7DC060',
-    'Crime':     '#C05050',
-    'Biography': '#60A0C0',
-    'Animation': '#E0C840',
-    'Adventure': '#50C090',
-    'Mystery':   '#9880C0',
-    'Horror':    '#A03030',
-    'Western':   '#C08040',
-    'Film-Noir': '#B0A07A',
-    'Fantasy':   '#A060D0',
-    'Family':    '#80D090',
-    'Thriller':  '#8060B0',
-    'Sci-Fi':    '#40B0D0',
-    'Romance':   '#D06080',
-    'History':   '#C09050',
-    'War':       '#708060',
-    'Music':     '#E050A0',
-    'Musical':   '#E060D0',
-    'Sport':     '#60C050'
   };
 
   /* ── 2. VIEWPORT & GEOMETRY ─────────────────────────────────────────────── */
@@ -918,6 +1074,102 @@
     document.querySelectorAll('#runtime-filter .rt-flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
   });
+
+  /* ── 17b. PALETTE STORYTELLER SWITCHER ───────────────────────────────────── */
+
+  function setPalette(palId, animate = true) {
+    const pal = PALETTES[palId] || PALETTES['golden-age'];
+    activePaletteId = pal.id;
+
+    // 1. Update CSS custom properties
+    const root = document.documentElement;
+    root.style.setProperty('--bg', pal.theme.bg);
+    root.style.setProperty('--panel', pal.theme.panel);
+    root.style.setProperty('--hi', pal.theme.hi);
+    root.style.setProperty('--mid', pal.theme.mid);
+    root.style.setProperty('--lo', pal.theme.lo);
+    root.style.setProperty('--accent', pal.theme.accent);
+    root.style.setProperty('--glow', pal.theme.glow);
+
+    // 2. Update decade filter swatches (--dc)
+    document.querySelectorAll('#decade-filter .flt-btn[data-decade]').forEach(btn => {
+      const dec = btn.getAttribute('data-decade');
+      const c = pal.decades[dec] || '#888';
+      btn.style.setProperty('--dc', c);
+    });
+
+    // 3. Update genre filter swatches (--dc)
+    document.querySelectorAll('#genre-filter .genre-flt-btn[data-genre]').forEach(btn => {
+      const g = btn.getAttribute('data-genre');
+      const c = pal.genres[g] || '#888';
+      btn.style.setProperty('--dc', c);
+    });
+
+    // 4. Update data models
+    films.forEach(f => {
+      f.decadeColor = pal.decades[f.decade] || '#4A4A4A';
+      f.genreColor  = pal.genres[f.primaryGenre] || '#777777';
+    });
+
+    // 5. Update dots colors on canvas
+    if (dots) {
+      if (animate) {
+        dots.transition('palette-color').duration(450)
+          .attr('fill', d => getDotFill(d));
+      } else {
+        dots.attr('fill', d => getDotFill(d));
+      }
+    }
+
+    // 6. Update palette UI dropdown states
+    document.querySelectorAll('.palette-option').forEach(opt => {
+      opt.classList.toggle('active', opt.getAttribute('data-palette') === pal.id);
+    });
+
+    const activeSwatchWrap = document.getElementById('palette-active-swatch');
+    if (activeSwatchWrap && pal.swatchPreview) {
+      activeSwatchWrap.innerHTML = pal.swatchPreview
+        .map(c => `<span class="swatch-dot" style="background: ${c};"></span>`)
+        .join('');
+    }
+
+    try {
+      localStorage.setItem('viz_palette', pal.id);
+    } catch (e) {}
+  }
+
+  // Palette Picker Dropdown Toggle & Selection
+  const palettePicker   = document.getElementById('palette-picker');
+  const paletteBtn      = document.getElementById('palette-btn');
+
+  if (paletteBtn && palettePicker) {
+    paletteBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      palettePicker.classList.toggle('open');
+      const isOpen = palettePicker.classList.contains('open');
+      paletteBtn.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    document.querySelectorAll('.palette-option').forEach(opt => {
+      opt.addEventListener('click', e => {
+        e.stopPropagation();
+        const pId = opt.getAttribute('data-palette');
+        setPalette(pId, true);
+        palettePicker.classList.remove('open');
+        paletteBtn.setAttribute('aria-expanded', 'false');
+      });
+    });
+
+    document.addEventListener('click', e => {
+      if (!palettePicker.contains(e.target)) {
+        palettePicker.classList.remove('open');
+        paletteBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
+
+  // Initialize active palette on start
+  setPalette(activePaletteId, false);
 
   /* ── 18. KEYBOARD SHORTCUTS ─────────────────────────────────────────────── */
 
