@@ -821,15 +821,34 @@ html, body {
   padding-top: 8px;
 }
 
+
 /* ── Documentary Focus: dim non-chapter dots ─────────────────────── */
+body.doc-playing .film-dot {
+  will-change: transform, opacity;
+  transition: opacity 0.5s ease !important;
+}
 body.doc-playing .film-dot:not(.doc-focus) {
   opacity: 0.03 !important;
   pointer-events: none !important;
 }
 body.doc-playing .film-dot.doc-focus {
   opacity: 1 !important;
-  filter: url(#dot-glow);
+  /* No SVG filter here — applying glow to 1000 dots simultaneously causes GPU thrash.
+     A subtle accent stroke provides the visual separation instead. */
+  stroke: rgba(137, 196, 220, 0.35) !important;
+  stroke-width: 0.8px !important;
 }
+
+/* Shift SVG canvas up when scrubber bar is visible so bottom axes aren't cropped */
+body.doc-playing #record-svg {
+  transform: translateY(-18px);
+  transition: transform 0.4s ease;
+}
+body:not(.doc-playing) #record-svg {
+  transform: translateY(0);
+  transition: transform 0.4s ease;
+}
+
 body.doc-playing #filters {
   opacity: 0.15;
   pointer-events: none;
@@ -848,5 +867,3 @@ body.doc-playing #doc-scrubber {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
-
-
