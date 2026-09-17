@@ -300,6 +300,7 @@
   const galaxyScenery   = svg.append('g').attr('class', 'galaxy-scenery').style('display', 'none');
   const constellationG  = svg.append('g').attr('class', 'constellation-layer');
   const dotsGroup       = svg.append('g').attr('class', 'dots-group');
+  const spotlightG      = svg.append('g').attr('class', 'spotlight-layer');
   const labelG          = svg.append('g').attr('class', 'label-group');
 
   /* ── 6. DRAW SCENERY PER MODE ───────────────────────────────────────────── */
@@ -507,8 +508,22 @@
       galaxyScenery.style('display', null).attr('opacity', 0).transition().duration(400).attr('opacity', 1);
     }
 
-    // Animate all dots to new target coordinates AND refresh circle sizes
-    dots.transition().duration(850).ease(d3.easeCubicOut)
+    // Animate all dots to new target coordinates with organic ripple delays
+    dots.transition()
+      .duration(750)
+      .delay(d => {
+        if (newMode === 'record') {
+          const pt = posRecord.get(d.id) || { x: cx, y: cy };
+          return Math.min(220, Math.hypot(pt.x - cx, pt.y - cy) * 0.4);
+        } else if (newMode === 'timeline') {
+          return Math.min(240, ((d.y || 1995) - 1920) * 2.2);
+        } else if (newMode === 'galaxy') {
+          const ms = d.ms != null ? d.ms : 70;
+          return Math.min(240, (ms - 40) * 3.6);
+        }
+        return 0;
+      })
+      .ease(d3.easeCubicOut)
       .attr('cx', d => {
         if (newMode === 'record')   return (posRecord.get(d.id)   || { x: cx }).x;
         if (newMode === 'timeline') return (posTimeline.get(d.id) || { x: cx }).x;
@@ -927,193 +942,404 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════════════════
-     DATA DOCUMENTARY — Guided Story Tour Engine
-     Skill: data-documentary (Deep Exhibition Tour — 5 chapters, ~10s each)
-     Universal: chapter manifest drives all focus states and mode switches.
+     DATA DOCUMENTARY — Guided Story Tour Engine (Multi-Dimensional)
+     Features: Segmented Timeline Scrubber, Landmark Entity Spotlight Cards,
+               Pure Web Audio Ambient Synthesizer & Chimes,
+               Organic Ripple Motion & Pulsing Focal Halo Rings.
      ═══════════════════════════════════════════════════════════════════════════ */
 
-  // ── Chapter Manifest (generated from IMDB Top 1000 dataset analytics) ──────
+  // ── Chapter Manifest with Landmark Spotlight Films ────────────────────────
   const DOC_CHAPTERS = [
     {
       id: 'ch0',
       badge: 'PROLOGUE \u00b7 THE FULL CENTURY',
       title: '1,000 Films. 100 Years.',
-      body: 'Every dot is a film. Every ring a rating. The closer to the center, the higher the acclaim. This is what 100 years of cinema looks like.',
+      body: 'Every dot is an acclaimed masterpiece. The closer to the center, the higher the rating. Here is the architecture of modern cinema.',
       stat: '1,000 FILMS \u00b7 \u2605 7.6 TO \u2605 9.3 \u00b7 1920 TO 2020',
       mode: 'record',
       decadeFilter: null,
-      duration: 6000
+      spotlightFilms: ['imdb-0001', 'imdb-0002', 'imdb-0003'],
+      duration: 6500
     },
     {
       id: 'ch1',
       badge: 'CHAPTER 1 OF 6 \u00b7 ORIGINS',
       title: 'The Silent Pioneers',
-      body: 'Only 17 films from the 1920s-30s survive in the Top 1000 — yet they invented every narrative technique still used today.',
-      stat: '\u2605 AVG 8.1 \u00b7 1920s-30s \u00b7 17 FILMS',
+      body: 'Only 17 films from the 1920s\u201330s survive in the Top 1000 \u2014 yet they invented the visual grammar of science fiction, comedy, and drama.',
+      stat: '\u2605 AVG 8.1 \u00b7 1920s\u201330s \u00b7 17 FILMS',
       mode: 'record',
       decadeFilter: '1920',
+      spotlightFilms: ['imdb-0127', 'imdb-0053', 'imdb-0052'],
       duration: 7000
     },
     {
       id: 'ch2',
       badge: 'CHAPTER 2 OF 6 \u00b7 THE GOLDEN AGE',
       title: "Hollywood's Unbroken Streak",
-      body: 'The 1940s-50s delivered 112 enduring masterworks — the most per-decade concentration of critically sustained films in the dataset.',
-      stat: '\u2605 AVG 8.2 \u00b7 1940s-50s \u00b7 112 FILMS',
+      body: 'The 1940s\u201350s delivered 112 enduring masterworks \u2014 the highest concentration of critically sustained films per decade in history.',
+      stat: '\u2605 AVG 8.2 \u00b7 1940s\u201350s \u00b7 112 FILMS',
       mode: 'record',
       decadeFilter: '1940',
+      spotlightFilms: ['imdb-0051', 'imdb-0125', 'imdb-0005'],
       duration: 7000
     },
     {
       id: 'ch3',
       badge: 'CHAPTER 3 OF 6 \u00b7 THE REVOLUTION',
       title: 'New Hollywood: Cinema at Its Peak',
-      body: "Coppola, Kubrick, Spielberg, Scorsese. The 60s-70s produced the dataset's highest average rating — a creative apex never quite equalled.",
-      stat: '\u2605 AVG 8.3 \u00b7 1960s-70s \u00b7 184 FILMS \u00b7 HIGHEST AVG',
+      body: "Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith \u2014 the 60s\u201370s hold the highest average score in the dataset.",
+      stat: '\u2605 AVG 8.3 \u00b7 1960s\u201370s \u00b7 184 FILMS \u00b7 HIGHEST AVG',
       mode: 'record',
       decadeFilter: '1960',
-      duration: 7000
+      spotlightFilms: ['imdb-0002', 'imdb-0075', 'imdb-0115'],
+      duration: 7500
     },
     {
       id: 'ch4',
       badge: 'CHAPTER 4 OF 6 \u00b7 THE 1994 MIRACLE',
-      title: 'One Year. Three Timeless Films.',
-      body: 'The 1980s-90s dominate in sheer volume: 404 films. But 1994 stands apart — Shawshank, Pulp Fiction, Forrest Gump, all in a single year.',
-      stat: '\u2605 AVG 8.1 \u00b7 1980s-90s \u00b7 404 FILMS \u00b7 LARGEST ERA',
+      title: 'One Year. Three Timeless Giants.',
+      body: 'The 1980s\u201390s dominate in volume (404 films). But 1994 alone gave birth to Shawshank, Pulp Fiction, and Forrest Gump simultaneously.',
+      stat: '\u2605 AVG 8.1 \u00b7 1980s\u201390s \u00b7 404 FILMS \u00b7 LARGEST ERA',
       mode: 'timeline',
       decadeFilter: '1980',
-      duration: 7000
+      spotlightFilms: ['imdb-0001', 'imdb-0007', 'imdb-0012'],
+      duration: 7500
     },
     {
       id: 'ch5',
       badge: 'CHAPTER 5 OF 6 \u00b7 THE GLOBAL WAVE',
       title: 'Cinema Goes Worldwide',
-      body: 'The 2000s-10s brought the largest diversity shift: South Korea, Japan, Spain, and Mexico broke into the Top 1000 alongside Hollywood blockbusters.',
-      stat: '283 FILMS \u00b7 2000s-10s \u00b7 MOST INTERNATIONAL ERA',
+      body: 'The 2000s\u201310s expanded global representation: South Korea, Japan, and international auteurs stood shoulder-to-shoulder with modern epics.',
+      stat: '283 FILMS \u00b7 2000s\u201310s \u00b7 HIGHEST DIVERSITY',
       mode: 'timeline',
       decadeFilter: '2000',
-      duration: 7000
+      spotlightFilms: ['imdb-0003', 'imdb-0020', 'imdb-0006'],
+      duration: 7500
     },
     {
       id: 'ch6',
       badge: 'EPILOGUE \u00b7 TWO VERDICTS',
       title: 'Critics vs. Audiences: A Permanent Split',
-      body: 'High Metascore rarely guarantees a high IMDb rating. The two systems reward fundamentally different qualities in a film.',
-      stat: 'METASCORE 90+ does NOT equal IMDb 9.0+',
+      body: 'A Metascore above 90 rarely guarantees universal audience reverence. The two systems reward fundamentally different cinematic values.',
+      stat: 'METASCORE 90+ \u2260 IMDb 9.0+ \u00b7 GALAXY VIEW',
       mode: 'galaxy',
       decadeFilter: null,
+      spotlightFilms: ['imdb-0010', 'imdb-0022', 'imdb-0009'],
       duration: 8000
     }
   ];
+
+  // ── Web Audio Synthesizer (Cinematic Ambient Drone + Chapter Chimes) ───────
+  class DocAudioEngine {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+      this.droneGain = null;
+      this.droneOsc1 = null;
+      this.droneOsc2 = null;
+      this.filter = null;
+    }
+
+    init() {
+      if (this.ctx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+    }
+
+    startDrone() {
+      if (this.muted) return;
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      this.stopDrone();
+
+      const now = this.ctx.currentTime;
+      this.filter = this.ctx.createBiquadFilter();
+      this.filter.type = 'lowpass';
+      this.filter.frequency.setValueAtTime(190, now);
+
+      this.droneGain = this.ctx.createGain();
+      this.droneGain.gain.setValueAtTime(0.0001, now);
+      this.droneGain.gain.exponentialRampToValueAtTime(0.045, now + 1.8);
+
+      this.droneOsc1 = this.ctx.createOscillator();
+      this.droneOsc1.type = 'sine';
+      this.droneOsc1.frequency.setValueAtTime(77.78, now); // Eb2
+
+      this.droneOsc2 = this.ctx.createOscillator();
+      this.droneOsc2.type = 'triangle';
+      this.droneOsc2.frequency.setValueAtTime(116.54, now); // Bb2
+
+      this.droneOsc1.connect(this.filter);
+      this.droneOsc2.connect(this.filter);
+      this.filter.connect(this.droneGain);
+      this.droneGain.connect(this.ctx.destination);
+
+      this.droneOsc1.start();
+      this.droneOsc2.start();
+    }
+
+    stopDrone() {
+      if (this.droneGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.droneGain.gain.setValueAtTime(this.droneGain.gain.value, now);
+          this.droneGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+          const o1 = this.droneOsc1;
+          const o2 = this.droneOsc2;
+          setTimeout(() => {
+            if (o1) { try { o1.stop(); o1.disconnect(); } catch (e) {} }
+            if (o2) { try { o2.stop(); o2.disconnect(); } catch (e) {} }
+          }, 700);
+          this.droneOsc1 = null;
+          this.droneOsc2 = null;
+        } catch (e) {}
+      }
+    }
+
+    playChapterTransition(chIdx) {
+      if (this.muted) return;
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+
+      const now = this.ctx.currentTime;
+      const chords = [
+        [311.13, 392.00, 466.16], // Eb, G, Bb
+        [349.23, 440.00, 523.25], // F, A, C
+        [392.00, 493.88, 587.33], // G, B, D
+        [466.16, 587.33, 698.46], // Bb, D, F
+        [523.25, 659.25, 783.99], // C, E, G
+        [587.33, 739.99, 880.00], // D, F#, A
+        [622.25, 783.99, 932.33]  // Eb, G, Bb (high)
+      ];
+      const notes = chords[chIdx % chords.length];
+
+      notes.forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.07);
+
+        gain.gain.setValueAtTime(0.0001, now + i * 0.07);
+        gain.gain.exponentialRampToValueAtTime(0.038, now + i * 0.07 + 0.03);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + i * 0.07 + 1.5);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + i * 0.07);
+        osc.stop(now + i * 0.07 + 1.6);
+      });
+    }
+
+    toggleMute() {
+      this.muted = !this.muted;
+      if (this.muted) {
+        this.stopDrone();
+      } else {
+        if (docPlaying) this.startDrone();
+      }
+      return this.muted;
+    }
+  }
+
+  const docAudio = new DocAudioEngine();
 
   // ── State ────────────────────────────────────────────────────────────────
   let docPlaying       = false;
   let docCurrentChIdx  = -1;
   let docTimer         = null;
-  let docProgressTimer = null;
 
   // ── DOM References ────────────────────────────────────────────────────────
   const docPlayBtn     = document.getElementById('doc-play-btn');
   const docPlayIcon    = document.getElementById('doc-play-icon');
   const docPlayLabel   = document.getElementById('doc-play-label');
+  const docSoundBtn    = document.getElementById('doc-sound-btn');
+  const docSoundIcon   = document.getElementById('doc-sound-icon');
   const docScrubber    = document.getElementById('doc-scrubber');
-  const docProgressFill = document.getElementById('doc-progress-fill');
-  const docChaptersRow = document.getElementById('doc-chapters-row');
+  const docSegmentsWrap = document.getElementById('doc-segments-container');
   const docCallout     = document.getElementById('doc-callout');
   const docBadge       = document.getElementById('doc-chapter-badge');
   const docCallTitle   = document.getElementById('doc-callout-title');
   const docCallBody    = document.getElementById('doc-callout-body');
   const docCallStat    = document.getElementById('doc-callout-stat');
+  const docSpotlights  = document.getElementById('doc-spotlights');
 
-  // ── Build Scrubber Chapter Dots ─────────────────────────────────────────
-  DOC_CHAPTERS.forEach((ch, i) => {
-    const dot = document.createElement('div');
-    dot.className = 'doc-chapter-dot';
-    dot.id = `doc-dot-${i}`;
-    dot.innerHTML = `<span class="doc-chapter-pip"></span><span class="doc-dot-label">${ch.title}</span>`;
-    dot.addEventListener('click', () => {
-      if (!docPlaying) docStartPlaying();
-      docGoToChapter(i);
+  // ── Build Segmented Scrubber Bar ──────────────────────────────────────────
+  function buildDocSegments() {
+    if (!docSegmentsWrap) return;
+    docSegmentsWrap.innerHTML = '';
+    DOC_CHAPTERS.forEach((ch, i) => {
+      const seg = document.createElement('div');
+      seg.className = 'doc-segment';
+      seg.id = `doc-seg-${i}`;
+      seg.innerHTML = `
+        <div class="doc-segment-track">
+          <div class="doc-segment-fill" id="doc-seg-fill-${i}"></div>
+        </div>
+        <div class="doc-segment-label">
+          <span class="doc-segment-num">0${i + 1}</span>
+          <span class="doc-segment-text">${esc(ch.title)}</span>
+        </div>
+      `;
+      seg.addEventListener('click', () => {
+        if (!docPlaying) docStartPlaying();
+        docGoToChapter(i);
+      });
+      docSegmentsWrap.appendChild(seg);
     });
-    docChaptersRow.appendChild(dot);
-  });
+  }
+  buildDocSegments();
 
   // ── Play / Pause Button ──────────────────────────────────────────────────
   docPlayBtn.addEventListener('click', () => {
     if (docPlaying) { docStopPlaying(); } else { docStartPlaying(); }
   });
 
-  // ── Start Playing ──────────────────────────────────────────────────────
+  // ── Sound Toggle Button ──────────────────────────────────────────────────
+  if (docSoundBtn) {
+    docSoundBtn.addEventListener('click', () => {
+      const isMuted = docAudio.toggleMute();
+      docSoundBtn.classList.toggle('muted', isMuted);
+      docSoundIcon.textContent = isMuted ? '🔇' : '🔊';
+    });
+  }
+
+  // ── Coordinates Getter Helper ────────────────────────────────────────────
+  function getFilmCoords(id) {
+    if (currentMode === 'timeline') return posTimeline.get(id) || { x: cx, y: cy };
+    if (currentMode === 'galaxy')   return posGalaxy.get(id)   || { x: cx, y: cy };
+    return posRecord.get(id) || { x: cx, y: cy };
+  }
+
+  // ── Render Spotlight Halos on SVG Canvas ─────────────────────────────────
+  function renderSpotlightHalos(filmIds) {
+    spotlightG.selectAll('*').remove();
+    dots.classed('doc-spotlight-dot', false);
+
+    if (!filmIds || !filmIds.length) return;
+
+    filmIds.forEach(fid => {
+      const f = filmsById[fid];
+      if (!f) return;
+
+      dots.filter(d => d.id === fid).classed('doc-spotlight-dot', true);
+
+      const pos = getFilmCoords(fid);
+      if (!pos) return;
+
+      spotlightG.append('circle')
+        .attr('class', 'spotlight-pulse')
+        .attr('cx', pos.x)
+        .attr('cy', pos.y)
+        .attr('r', 8);
+    });
+  }
+
+  // ── Start Playing ────────────────────────────────────────────────────────
   function docStartPlaying() {
     docPlaying = true;
-    docPlayIcon.textContent = '⏸';
+    docPlayIcon.textContent = '\u23f8';
     docPlayLabel.textContent = 'PAUSE';
     docPlayBtn.classList.add('playing');
     docScrubber.classList.add('visible');
     document.body.classList.add('doc-playing');
-    // Suppress any open overlay / tooltip
+
     tooltipEl.style.display = 'none';
     overlay.classList.remove('visible');
+
+    docAudio.startDrone();
+
     const startIdx = (docCurrentChIdx < 0 || docCurrentChIdx >= DOC_CHAPTERS.length - 1) ? 0 : docCurrentChIdx;
     docGoToChapter(startIdx);
   }
 
-  // ── Stop Playing ──────────────────────────────────────────────────────
+  // ── Stop Playing ─────────────────────────────────────────────────────────
   function docStopPlaying() {
     docPlaying = false;
-    docPlayIcon.textContent = '▶';
+    docPlayIcon.textContent = '\u25b6';
     docPlayLabel.textContent = 'PLAY STORY';
     docPlayBtn.classList.remove('playing');
     docScrubber.classList.remove('visible');
     document.body.classList.remove('doc-playing');
+
     clearTimeout(docTimer);
-    clearInterval(docProgressTimer);
     docHideCallout();
-    // Remove all doc focus classes
-    dots.classed('doc-focus', false);
-    // Reset filters silently
+    docAudio.stopDrone();
+
+    spotlightG.selectAll('*').remove();
+    dots.classed('doc-focus', false).classed('doc-spotlight-dot', false);
+
     activeDecades.clear();
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
     applyFilters();
-    // Restore progress fill
-    docProgressFill.style.transition = 'none';
-    docProgressFill.style.transform  = 'scaleX(0)';
-    // Deactivate all chapter dots
-    document.querySelectorAll('.doc-chapter-dot').forEach(d => d.classList.remove('active'));
+
+    // Reset all segment bars
+    DOC_CHAPTERS.forEach((_, i) => {
+      const seg = document.getElementById(`doc-seg-${i}`);
+      const fill = document.getElementById(`doc-seg-fill-${i}`);
+      if (seg) seg.className = 'doc-segment';
+      if (fill) {
+        fill.style.transition = 'none';
+        fill.style.transform = 'scaleX(0)';
+      }
+    });
   }
 
   // ── Go To Chapter ────────────────────────────────────────────────────────
   function docGoToChapter(idx) {
     if (idx < 0 || idx >= DOC_CHAPTERS.length) { docStopPlaying(); return; }
     clearTimeout(docTimer);
-    clearInterval(docProgressTimer);
 
     docCurrentChIdx = idx;
     const ch = DOC_CHAPTERS[idx];
 
-    // Mark chapter dots
-    document.querySelectorAll('.doc-chapter-dot').forEach((d, i) => {
-      d.classList.toggle('active', i === idx);
+    // Audio chime for chapter transition
+    docAudio.playChapterTransition(idx);
+
+    // Update segmented scrubber states
+    DOC_CHAPTERS.forEach((_, i) => {
+      const seg = document.getElementById(`doc-seg-${i}`);
+      const fill = document.getElementById(`doc-seg-fill-${i}`);
+      if (!seg || !fill) return;
+
+      fill.style.transition = 'none';
+      if (i < idx) {
+        seg.className = 'doc-segment completed';
+        fill.style.transform = 'scaleX(1)';
+      } else if (i === idx) {
+        seg.className = 'doc-segment active';
+        fill.style.transform = 'scaleX(0)';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            fill.style.transition = `transform ${ch.duration}ms linear`;
+            fill.style.transform = 'scaleX(1)';
+          });
+        });
+      } else {
+        seg.className = 'doc-segment';
+        fill.style.transform = 'scaleX(0)';
+      }
     });
 
-    // Step 1: hide callout, switch mode, then animate in
+    // Step 1: Hide callout, clear spotlights, switch mode
     docHideCallout();
+    spotlightG.selectAll('*').remove();
 
-    // Apply decade filter for this chapter
     activeDecades.clear();
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
 
-    // Switch visualization mode (bypass same-mode guard for doc chapters)
+    // Switch visualization mode with organic ripple delay
     if (ch.mode !== currentMode) {
       switchMode(ch.mode);
     } else {
-      // Same mode — still need to clear constellations and fire applyFilters properly
       clearConstellations();
     }
 
-    // Small delay to let mode transition settle, then apply focus
+    // After mode transition settles: apply focus and show landmark cards
     setTimeout(() => {
       if (!docPlaying) return;
 
@@ -1125,85 +1351,105 @@
       }
       applyFilters();
 
-      // Tag focused dots with doc-focus class
+      // Highlight focused dots
       dots.classed('doc-focus', d =>
         ch.decadeFilter ? d.decadeGroup === ch.decadeFilter : true
       );
 
-      // Position and show callout card
+      // Render pulsing halo rings on SVG for spotlighted films
+      renderSpotlightHalos(ch.spotlightFilms || []);
+
+      // Populate Landmark Mini-Cards
+      if (ch.spotlightFilms && ch.spotlightFilms.length) {
+        docSpotlights.innerHTML = `
+          <div class="doc-spotlight-heading">LANDMARK TITLES</div>
+          <div class="doc-spotlight-cards">
+            ${ch.spotlightFilms.map(fid => {
+              const f = filmsById[fid];
+              if (!f) return '';
+              return `
+                <div class="doc-spotlight-card" data-filmid="${f.id}" title="Inspect ${esc(f.t)}">
+                  <img class="doc-spotlight-poster" src="${esc(f.p || '')}" alt="${esc(f.t)}" onerror="this.style.display='none'">
+                  <div class="doc-spotlight-info">
+                    <div class="doc-spotlight-title">${esc(f.t)}</div>
+                    <div class="doc-spotlight-meta">${f.y || ''} \u00b7 ${esc(f.dir || '')}</div>
+                    <div class="doc-spotlight-rating">\u2605 ${Number(f.r).toFixed(1)}</div>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        `;
+
+        // Attach click handlers to mini cards to open full detail modal
+        docSpotlights.querySelectorAll('.doc-spotlight-card').forEach(card => {
+          card.addEventListener('click', e => {
+            e.stopPropagation();
+            const fid = card.getAttribute('data-filmid');
+            const f = filmsById[fid];
+            if (f) {
+              openOverlay(f);
+            }
+          });
+        });
+      } else {
+        docSpotlights.innerHTML = '';
+      }
+
+      // Position callout card in safe quadrant
       docPositionCallout(idx);
       docBadge.textContent = ch.badge;
       docCallTitle.textContent = ch.title;
       docCallBody.textContent = ch.body;
       docCallStat.textContent = ch.stat;
 
-      // Slight delay before fade-in for clean separation
       setTimeout(() => {
         if (!docPlaying) return;
         docCallout.setAttribute('aria-hidden', 'false');
         docCallout.classList.add('visible');
-      }, 100);
+      }, 80);
 
-      // Animate progress fill via scaleX — synced to space-between dot positions
-      // Dot i sits at position i/(N-1), so fill goes from scaleX(i/(N-1)) to scaleX((i+1)/(N-1))
-      const N = DOC_CHAPTERS.length;
-      const scaleStart = idx / (N - 1);
-      const scaleEnd   = Math.min(1, (idx + 1) / (N - 1));
-      docProgressFill.style.transition = 'none';
-      docProgressFill.style.transform  = `scaleX(${scaleStart})`;
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          docProgressFill.style.transition = `transform ${ch.duration}ms linear`;
-          docProgressFill.style.transform  = `scaleX(${scaleEnd})`;
-        });
-      });
-
-      // Auto-advance timer
+      // Auto-advance timer: fires exactly when the segment fill hits 100%
       docTimer = setTimeout(() => {
         if (!docPlaying) return;
         if (idx < DOC_CHAPTERS.length - 1) {
           docGoToChapter(idx + 1);
         } else {
-          // End of tour — stop cleanly
           docStopPlaying();
         }
       }, ch.duration);
 
-    }, 700);
+    }, 600);
   }
 
-  // ── Position Callout in the least-data-dense quadrant ───────────────────
+  // ── Position Callout in the least-data-dense quadrant ─────────────────────
   function docPositionCallout(idx) {
-    const margin = 36;
-    const scrubH = 44;
-    const cardW  = 300;
-    const cardH  = 160; // estimated
+    const margin = 28;
+    const cardW  = 320;
+    const cardH  = 230;
 
     const vW = window.innerWidth;
     const vH = window.innerHeight;
 
-    // Quadrant safe zones: [left, top]
     const quadrants = [
-      { l: margin,            t: 68 },                          // top-left
-      { l: vW - cardW - margin - 230, t: 68 },                 // top-right (avoid filter panel)
-      { l: margin,            t: vH - cardH - scrubH - margin }, // bottom-left
-      { l: vW - cardW - margin - 230, t: vH - cardH - scrubH - margin } // bottom-right
+      { l: margin,                    t: 68 },                          // Top-left
+      { l: vW - cardW - margin - 230, t: 68 },                          // Top-right
+      { l: margin,                    t: vH - cardH - 52 - margin },    // Bottom-left
+      { l: vW - cardW - margin - 230, t: vH - cardH - 52 - margin }     // Bottom-right
     ];
 
-    // Rotate quadrant by chapter so cards move around naturally
     const q = quadrants[idx % quadrants.length];
     docCallout.style.left = Math.max(margin, q.l) + 'px';
     docCallout.style.top  = Math.max(68, q.t) + 'px';
   }
 
-  // ── Hide Callout ─────────────────────────────────────────────────────────
+  // ── Hide Callout ───────────────────────────────────────────────────────────
   function docHideCallout() {
     docCallout.classList.remove('visible');
     docCallout.setAttribute('aria-hidden', 'true');
   }
 
-  // ── Escape key exits documentary mode ───────────────────────────────────
-  // (appended to existing keydown handler)
+  // ── Escape key exits documentary mode ─────────────────────────────────────
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && docPlaying) {
       docStopPlaying();

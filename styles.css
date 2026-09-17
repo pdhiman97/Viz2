@@ -628,17 +628,27 @@ html, body {
    DATA DOCUMENTARY — documentary mode components
    ═══════════════════════════════════════════════════════════════════ */
 
-/* ── Play / Pause Button ─────────────────────────────────────────── */
-#doc-play-btn {
+/* ═══════════════════════════════════════════════════════════════════
+   DATA DOCUMENTARY — Guided Story Tour Engine
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Play / Pause & Sound Controls Wrap ──────────────────────────── */
+#doc-controls-wrap {
   position: fixed;
   top: 64px;
   right: 24px;
   z-index: 400;
   display: flex;
+  gap: 6px;
+  width: 216px;
+}
+
+#doc-play-btn {
+  flex: 1;
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 9px;
-  width: 216px;
   background: rgba(212, 168, 83, 0.12);
   border: 1px solid #D4A853;
   color: #D4A853;
@@ -646,7 +656,7 @@ html, body {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.2em;
-  padding: 10px 18px;
+  padding: 10px 14px;
   cursor: pointer;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -681,109 +691,160 @@ html, body {
   line-height: 1;
 }
 
-/* ── Chapter Scrubber Bar ────────────────────────────────────────── */
+#doc-sound-btn {
+  width: 36px;
+  background: rgba(20, 20, 20, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #AAAAAA;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s ease;
+}
+#doc-sound-btn:hover {
+  border-color: #D4A853;
+  color: #D4A853;
+  background: rgba(212, 168, 83, 0.1);
+}
+#doc-sound-btn.muted {
+  opacity: 0.5;
+  color: #666;
+}
+
+/* ── Segmented Chapter Scrubber Bar ──────────────────────────────── */
 #doc-scrubber {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.06);
+  height: 0;
+  background: rgba(10, 10, 10, 0.94);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   z-index: 400;
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.4s ease, height 0.3s ease;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
 }
 #doc-scrubber.visible {
   opacity: 1;
   pointer-events: auto;
-  height: 36px;
-  background: rgba(10, 10, 10, 0.92);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  align-items: center;
-  padding: 0 28px;
+  height: 42px;
 }
 
-/* Progress fill — spans exactly first dot to last dot via scaleX */
-#doc-progress-fill {
-  position: absolute;
-  top: 0;
-  left: 28px;
-  height: 2px;
-  width: calc(100% - 56px);
-  background: var(--accent);
-  transform-origin: left center;
-  transform: scaleX(0);
-  pointer-events: none;
-}
-
-/* Chapters row — spread end to end */
-#doc-chapters-row {
+#doc-segments-container {
   display: flex;
   width: 100%;
-  justify-content: space-between;
+  gap: 8px;
   align-items: center;
-  position: relative;
-  z-index: 1;
 }
-.doc-chapter-dot {
+
+.doc-segment {
+  flex: 1;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 5px;
   cursor: pointer;
-  opacity: 0.4;
+  padding: 4px 0;
+  opacity: 0.5;
   transition: opacity 0.25s ease;
+}
+.doc-segment:hover {
+  opacity: 0.9;
+}
+.doc-segment.active {
+  opacity: 1;
+}
+.doc-segment.completed {
+  opacity: 0.8;
+}
+
+.doc-segment-track {
+  height: 3px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+
+.doc-segment-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: #D4A853;
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform linear;
+}
+.doc-segment.active .doc-segment-fill {
+  background: var(--accent);
+}
+.doc-segment.completed .doc-segment-fill {
+  background: #888888;
+  transform: scaleX(1) !important;
+}
+
+.doc-segment-label {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
   font-family: var(--font);
   font-size: 9px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--mid);
-  padding: 4px 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
-  flex-shrink: 1;
 }
-.doc-chapter-dot:hover { opacity: 0.9; }
-.doc-chapter-dot.active { opacity: 1; color: var(--hi); }
-.doc-chapter-pip {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.3);
+.doc-segment.active .doc-segment-label {
+  color: var(--hi);
+  font-weight: 600;
+}
+.doc-segment-num {
+  font-size: 8px;
+  color: #777;
+  font-weight: 700;
   flex-shrink: 0;
-  transition: background 0.25s ease, transform 0.2s ease;
 }
-.doc-chapter-dot.active .doc-chapter-pip {
-  background: var(--accent);
-  transform: scale(1.5);
+.doc-segment.active .doc-segment-num {
+  color: var(--accent);
+}
+.doc-segment-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-
-/* ── Floating Callout Card ───────────────────────────────────────── */
+/* ── Floating Callout Card with Film Spotlights ──────────────────── */
 #doc-callout {
   position: fixed;
   z-index: 450;
-  pointer-events: none;
+  pointer-events: auto;
   opacity: 0;
   transform: translateY(8px);
   transition: opacity 0.45s ease, transform 0.45s ease;
-  max-width: 300px;
-  min-width: 220px;
+  width: 320px;
+  max-width: calc(100vw - 48px);
 }
 #doc-callout.visible {
   opacity: 1;
   transform: translateY(0);
-  pointer-events: none;
 }
+
 #doc-callout-inner {
-  background: rgba(10, 10, 10, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  padding: 18px 20px 16px;
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.85);
+  background: rgba(12, 12, 12, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  padding: 16px 18px 14px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9);
   position: relative;
 }
 #doc-callout-inner::before {
@@ -791,46 +852,146 @@ html, body {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--accent), transparent);
+  background: linear-gradient(90deg, #D4A853, var(--accent), transparent);
 }
+
 #doc-chapter-badge {
   font-family: var(--font);
   font-size: 8px;
-  letter-spacing: 0.26em;
-  color: var(--accent);
+  letter-spacing: 0.24em;
+  color: #D4A853;
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   text-transform: uppercase;
 }
 #doc-callout-title {
   font-family: var(--font);
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
   letter-spacing: 0.03em;
   color: var(--hi);
   line-height: 1.25;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 #doc-callout-body {
   font-family: Arial, sans-serif;
   font-size: 11px;
-  color: #aaa;
-  line-height: 1.6;
-  margin-bottom: 10px;
+  color: #b0b0b0;
+  line-height: 1.55;
+  margin-bottom: 8px;
   letter-spacing: 0.01em;
 }
 #doc-callout-stat {
   font-family: var(--font);
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   color: var(--accent);
-  border-top: 1px solid rgba(255,255,255,0.07);
-  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  padding-top: 6px;
+  margin-bottom: 10px;
 }
 
+/* Landmark Spotlight Mini Cards */
+.doc-spotlights {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 8px;
+}
+.doc-spotlight-heading {
+  font-family: var(--font);
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: #888;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.doc-spotlight-cards {
+  display: flex;
+  gap: 6px;
+}
+.doc-spotlight-card {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 6px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 0;
+  align-items: center;
+}
+.doc-spotlight-card:hover {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: #D4A853;
+  transform: translateY(-1px);
+}
+.doc-spotlight-poster {
+  width: 26px;
+  height: 38px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: #222;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.doc-spotlight-info {
+  flex: 1;
+  min-width: 0;
+}
+.doc-spotlight-title {
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--hi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.15;
+}
+.doc-spotlight-meta {
+  font-size: 9px;
+  color: #888;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+.doc-spotlight-rating {
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 700;
+  color: #D4A853;
+  letter-spacing: 0.05em;
+  margin-top: 1px;
+}
 
-/* ── Documentary Focus: dim non-chapter dots ─────────────────────── */
+/* ── Animated Spotlight Halo Rings on SVG ────────────────────────── */
+.spotlight-pulse {
+  fill: none;
+  stroke: #D4A853;
+  stroke-width: 1.5;
+  pointer-events: none;
+  opacity: 0.8;
+  animation: pulseRing 1.8s ease-out infinite;
+}
+@keyframes pulseRing {
+  0% {
+    r: 4px;
+    opacity: 0.9;
+    stroke-width: 2;
+  }
+  100% {
+    r: 28px;
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}
+
+/* ── Documentary Focus: Dimming & Canvas Lift ────────────────────── */
 body.doc-playing .film-dot {
   will-change: transform, opacity;
   transition: opacity 0.5s ease !important;
@@ -841,15 +1002,18 @@ body.doc-playing .film-dot:not(.doc-focus) {
 }
 body.doc-playing .film-dot.doc-focus {
   opacity: 1 !important;
-  /* No SVG filter here — applying glow to 1000 dots simultaneously causes GPU thrash.
-     A subtle accent stroke provides the visual separation instead. */
   stroke: rgba(137, 196, 220, 0.35) !important;
   stroke-width: 0.8px !important;
+}
+body.doc-playing .film-dot.doc-spotlight-dot {
+  opacity: 1 !important;
+  stroke: #D4A853 !important;
+  stroke-width: 2px !important;
 }
 
 /* Shift SVG canvas up when scrubber bar is visible so bottom axes aren't cropped */
 body.doc-playing #record-svg {
-  transform: translateY(-18px);
+  transform: translateY(-22px);
   transition: transform 0.4s ease;
 }
 body:not(.doc-playing) #record-svg {
@@ -867,7 +1031,7 @@ body.doc-playing #top-bar {
   pointer-events: none;
   transition: opacity 0.4s ease;
 }
-body.doc-playing #doc-play-btn {
+body.doc-playing #doc-controls-wrap {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
@@ -875,3 +1039,4 @@ body.doc-playing #doc-scrubber {
   opacity: 1 !important;
   pointer-events: auto !important;
 }
+
