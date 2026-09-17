@@ -623,3 +623,207 @@ html, body {
     max-width: 260px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DATA DOCUMENTARY — documentary mode components
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Play / Pause Button ─────────────────────────────────────────── */
+#doc-play-btn {
+  position: fixed;
+  bottom: 28px;
+  left: 28px;
+  z-index: 400;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(14, 14, 14, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: var(--hi);
+  font-family: var(--font);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 9px 18px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+}
+#doc-play-btn:hover {
+  background: rgba(30, 30, 30, 0.96);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+#doc-play-btn.playing {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+#doc-play-icon {
+  font-size: 10px;
+  line-height: 1;
+}
+
+/* ── Chapter Scrubber Bar ────────────────────────────────────────── */
+#doc-scrubber {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  z-index: 400;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease, height 0.3s ease;
+}
+#doc-scrubber.visible {
+  opacity: 1;
+  pointer-events: auto;
+  height: 36px;
+  background: rgba(10, 10, 10, 0.92);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+}
+#doc-progress-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--accent);
+  transition: width linear;
+  pointer-events: none;
+}
+#doc-chapters-row {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.doc-chapter-dot {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: opacity 0.25s ease;
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  color: var(--mid);
+  padding: 4px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+.doc-chapter-dot:hover { opacity: 0.9; }
+.doc-chapter-dot.active { opacity: 1; color: var(--hi); }
+.doc-chapter-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  flex-shrink: 0;
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+.doc-chapter-dot.active .doc-chapter-pip {
+  background: var(--accent);
+  transform: scale(1.4);
+}
+
+/* ── Floating Callout Card ───────────────────────────────────────── */
+#doc-callout {
+  position: fixed;
+  z-index: 450;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.45s ease, transform 0.45s ease;
+  max-width: 300px;
+  min-width: 220px;
+}
+#doc-callout.visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: none;
+}
+#doc-callout-inner {
+  background: rgba(10, 10, 10, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  padding: 18px 20px 16px;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.85);
+  position: relative;
+}
+#doc-callout-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+#doc-chapter-badge {
+  font-family: var(--font);
+  font-size: 8px;
+  letter-spacing: 0.26em;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+#doc-callout-title {
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: var(--hi);
+  line-height: 1.25;
+  margin-bottom: 8px;
+}
+#doc-callout-body {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 10px;
+  letter-spacing: 0.01em;
+}
+#doc-callout-stat {
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding-top: 8px;
+}
+
+/* ── Documentary Focus: dim non-chapter dots ─────────────────────── */
+body.doc-playing .film-dot:not(.doc-focus) {
+  opacity: 0.03 !important;
+  pointer-events: none !important;
+}
+body.doc-playing .film-dot.doc-focus {
+  opacity: 1 !important;
+  filter: url(#dot-glow);
+}
+body.doc-playing #filters {
+  opacity: 0.25;
+  pointer-events: none;
+}
+body.doc-playing #top-bar {
+  opacity: 0.4;
+  pointer-events: none;
+}
+body.doc-playing #doc-play-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+

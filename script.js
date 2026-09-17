@@ -926,4 +926,259 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  /* ═══════════════════════════════════════════════════════════════════════════
+     DATA DOCUMENTARY — Guided Story Tour Engine
+     Skill: data-documentary (Deep Exhibition Tour — 5 chapters, ~10s each)
+     Universal: chapter manifest drives all focus states and mode switches.
+     ═══════════════════════════════════════════════════════════════════════════ */
+
+  // ── Chapter Manifest (generated from IMDB Top 1000 dataset analytics) ──────
+  const DOC_CHAPTERS = [
+    {
+      id: 'ch1',
+      badge: 'CHAPTER 1 OF 5 · ORIGINS',
+      title: 'The Silent Pioneers',
+      body: '17 films from the 1920s–30s earned Top 1000 status — each one foundational to every genre that followed.',
+      stat: '★ AVG 8.1 · 1920s–30s · 17 FILMS',
+      mode: 'record',
+      decadeFilter: '1920',
+      duration: 10000
+    },
+    {
+      id: 'ch2',
+      badge: 'CHAPTER 2 OF 5 · THE GOLDEN AGE',
+      title: 'Hollywood's Unbroken Streak',
+      body: 'The 1940s–50s produced 112 top-rated films — the highest density of critically enduring classics per decade.',
+      stat: '★ AVG 8.2 · 1940s–50s · 112 FILMS',
+      mode: 'record',
+      decadeFilter: '1940',
+      duration: 10000
+    },
+    {
+      id: 'ch3',
+      badge: 'CHAPTER 3 OF 5 · REVOLUTION',
+      title: 'The 1970s New Hollywood Peak',
+      body: 'Coppola, Kubrick, Spielberg, and Scorsese forged cinema's creative zenith — the 60s–70s yield the highest average rating in the dataset.',
+      stat: '★ AVG 8.3 · 1960s–70s · 184 FILMS',
+      mode: 'record',
+      decadeFilter: '1960',
+      duration: 10000
+    },
+    {
+      id: 'ch4',
+      badge: 'CHAPTER 4 OF 5 · THE 1994 MIRACLE',
+      title: 'One Year Rewrote the Canon',
+      body: 'The 1980s–90s produced 404 films — the largest era cohort — anchored by Shawshank, Pulp Fiction, and Forrest Gump all landing in a single year.',
+      stat: '★ AVG 8.1 · 1980s–90s · 404 FILMS',
+      mode: 'timeline',
+      decadeFilter: '1980',
+      duration: 10000
+    },
+    {
+      id: 'ch5',
+      badge: 'CHAPTER 5 OF 5 · THE GLOBAL WAVE',
+      title: 'Critics vs. Audiences: The Great Divide',
+      body: 'Modern cinema widens the gap: films with Metascore above 90 often sit below ★8.5 on IMDb, revealing two completely different consensus systems.',
+      stat: 'METASCORE 90+ ≠ IMDb 9.0+ · SEE GALAXY VIEW',
+      mode: 'galaxy',
+      decadeFilter: null,
+      duration: 11000
+    }
+  ];
+
+  // ── State ────────────────────────────────────────────────────────────────
+  let docPlaying       = false;
+  let docCurrentChIdx  = -1;
+  let docTimer         = null;
+  let docProgressTimer = null;
+
+  // ── DOM References ────────────────────────────────────────────────────────
+  const docPlayBtn     = document.getElementById('doc-play-btn');
+  const docPlayIcon    = document.getElementById('doc-play-icon');
+  const docPlayLabel   = document.getElementById('doc-play-label');
+  const docScrubber    = document.getElementById('doc-scrubber');
+  const docProgressFill = document.getElementById('doc-progress-fill');
+  const docChaptersRow = document.getElementById('doc-chapters-row');
+  const docCallout     = document.getElementById('doc-callout');
+  const docBadge       = document.getElementById('doc-chapter-badge');
+  const docCallTitle   = document.getElementById('doc-callout-title');
+  const docCallBody    = document.getElementById('doc-callout-body');
+  const docCallStat    = document.getElementById('doc-callout-stat');
+
+  // ── Build Scrubber Chapter Dots ─────────────────────────────────────────
+  DOC_CHAPTERS.forEach((ch, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'doc-chapter-dot';
+    dot.id = `doc-dot-${i}`;
+    dot.innerHTML = `<span class="doc-chapter-pip"></span><span class="doc-dot-label">${ch.title}</span>`;
+    dot.addEventListener('click', () => {
+      if (!docPlaying) docStartPlaying();
+      docGoToChapter(i);
+    });
+    docChaptersRow.appendChild(dot);
+  });
+
+  // ── Play / Pause Button ──────────────────────────────────────────────────
+  docPlayBtn.addEventListener('click', () => {
+    if (docPlaying) { docStopPlaying(); } else { docStartPlaying(); }
+  });
+
+  // ── Start Playing ──────────────────────────────────────────────────────
+  function docStartPlaying() {
+    docPlaying = true;
+    docPlayIcon.textContent = '⏸';
+    docPlayLabel.textContent = 'PAUSE';
+    docPlayBtn.classList.add('playing');
+    docScrubber.classList.add('visible');
+    document.body.classList.add('doc-playing');
+    // Suppress any open overlay / tooltip
+    tooltipEl.style.display = 'none';
+    overlay.classList.remove('visible');
+    const startIdx = (docCurrentChIdx < 0 || docCurrentChIdx >= DOC_CHAPTERS.length - 1) ? 0 : docCurrentChIdx;
+    docGoToChapter(startIdx);
+  }
+
+  // ── Stop Playing ──────────────────────────────────────────────────────
+  function docStopPlaying() {
+    docPlaying = false;
+    docPlayIcon.textContent = '▶';
+    docPlayLabel.textContent = 'PLAY STORY';
+    docPlayBtn.classList.remove('playing');
+    docScrubber.classList.remove('visible');
+    document.body.classList.remove('doc-playing');
+    clearTimeout(docTimer);
+    clearInterval(docProgressTimer);
+    docHideCallout();
+    // Remove all doc focus classes
+    dots.classed('doc-focus', false);
+    // Reset filters silently
+    activeDecades.clear();
+    activeGenres.clear();
+    document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+    applyFilters();
+    // Restore progress bar
+    docProgressFill.style.transition = 'none';
+    docProgressFill.style.width = '0%';
+    // Deactivate all chapter dots
+    document.querySelectorAll('.doc-chapter-dot').forEach(d => d.classList.remove('active'));
+  }
+
+  // ── Go To Chapter ────────────────────────────────────────────────────────
+  function docGoToChapter(idx) {
+    if (idx < 0 || idx >= DOC_CHAPTERS.length) { docStopPlaying(); return; }
+    clearTimeout(docTimer);
+    clearInterval(docProgressTimer);
+
+    docCurrentChIdx = idx;
+    const ch = DOC_CHAPTERS[idx];
+
+    // Mark chapter dots
+    document.querySelectorAll('.doc-chapter-dot').forEach((d, i) => {
+      d.classList.toggle('active', i === idx);
+    });
+
+    // Step 1: hide callout, switch mode, then animate in
+    docHideCallout();
+
+    // Apply decade filter for this chapter
+    activeDecades.clear();
+    activeGenres.clear();
+    document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
+
+    // Switch visualization mode
+    switchMode(ch.mode);
+
+    // Small delay to let mode transition settle, then apply focus
+    setTimeout(() => {
+      if (!docPlaying) return;
+
+      // Apply decade filter if specified
+      if (ch.decadeFilter) {
+        activeDecades.add(ch.decadeFilter);
+        const decBtn = document.querySelector(`[data-decade="${ch.decadeFilter}"]`);
+        if (decBtn) decBtn.classList.add('active');
+      }
+      applyFilters();
+
+      // Tag focused dots with doc-focus class
+      dots.classed('doc-focus', d =>
+        ch.decadeFilter ? d.decadeGroup === ch.decadeFilter : true
+      );
+
+      // Position and show callout card
+      docPositionCallout(idx);
+      docBadge.textContent = ch.badge;
+      docCallTitle.textContent = ch.title;
+      docCallBody.textContent = ch.body;
+      docCallStat.textContent = ch.stat;
+
+      // Slight delay before fade-in for clean separation
+      setTimeout(() => {
+        if (!docPlaying) return;
+        docCallout.setAttribute('aria-hidden', 'false');
+        docCallout.classList.add('visible');
+      }, 100);
+
+      // Animate progress fill across chapter duration
+      docProgressFill.style.transition = 'none';
+      const pctStart = (idx / DOC_CHAPTERS.length) * 100;
+      const pctEnd   = ((idx + 1) / DOC_CHAPTERS.length) * 100;
+      docProgressFill.style.width = pctStart + '%';
+      requestAnimationFrame(() => {
+        docProgressFill.style.transition = `width ${ch.duration}ms linear`;
+        docProgressFill.style.width = pctEnd + '%';
+      });
+
+      // Auto-advance timer
+      docTimer = setTimeout(() => {
+        if (!docPlaying) return;
+        if (idx < DOC_CHAPTERS.length - 1) {
+          docGoToChapter(idx + 1);
+        } else {
+          // End of tour — stop cleanly
+          docStopPlaying();
+        }
+      }, ch.duration);
+
+    }, 700);
+  }
+
+  // ── Position Callout in the least-data-dense quadrant ───────────────────
+  function docPositionCallout(idx) {
+    const margin = 36;
+    const scrubH = 44;
+    const cardW  = 300;
+    const cardH  = 160; // estimated
+
+    const vW = window.innerWidth;
+    const vH = window.innerHeight;
+
+    // Quadrant safe zones: [left, top]
+    const quadrants = [
+      { l: margin,            t: 68 },                          // top-left
+      { l: vW - cardW - margin - 230, t: 68 },                 // top-right (avoid filter panel)
+      { l: margin,            t: vH - cardH - scrubH - margin }, // bottom-left
+      { l: vW - cardW - margin - 230, t: vH - cardH - scrubH - margin } // bottom-right
+    ];
+
+    // Rotate quadrant by chapter so cards move around naturally
+    const q = quadrants[idx % quadrants.length];
+    docCallout.style.left = Math.max(margin, q.l) + 'px';
+    docCallout.style.top  = Math.max(68, q.t) + 'px';
+  }
+
+  // ── Hide Callout ─────────────────────────────────────────────────────────
+  function docHideCallout() {
+    docCallout.classList.remove('visible');
+    docCallout.setAttribute('aria-hidden', 'true');
+  }
+
+  // ── Escape key exits documentary mode ───────────────────────────────────
+  // (appended to existing keydown handler)
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && docPlaying) {
+      docStopPlaying();
+    }
+  });
+
 })();

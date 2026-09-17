@@ -121,6 +121,28 @@
     </div>
   </aside>
 
+  <!-- ── DATA DOCUMENTARY: Play Button ── -->
+  <button id="doc-play-btn" aria-label="Play story tour" title="Play Story">
+    <span id="doc-play-icon">▶</span>
+    <span id="doc-play-label">PLAY STORY</span>
+  </button>
+
+  <!-- ── DATA DOCUMENTARY: Chapter Scrubber Bar ── -->
+  <div id="doc-scrubber" aria-hidden="true">
+    <div id="doc-progress-fill"></div>
+    <div id="doc-chapters-row"></div>
+  </div>
+
+  <!-- ── DATA DOCUMENTARY: Floating Callout Card ── -->
+  <div id="doc-callout" aria-live="polite" aria-hidden="true">
+    <div id="doc-callout-inner">
+      <div id="doc-chapter-badge"></div>
+      <div id="doc-callout-title"></div>
+      <div id="doc-callout-body"></div>
+      <div id="doc-callout-stat"></div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://d3js.org/d3.v7.min.js"></script>
