@@ -438,6 +438,7 @@
     const pos = posRecord.get(f.id) || { x: cx, y: cy };
     return {
       ...f,
+      releaseYear: f.y,
       x: pos.x,
       y: pos.y,
       dotR: getDotRadius(f, 'record')
@@ -513,21 +514,22 @@
       document.body.classList.add('doc-moving');
       setTimeout(() => {
         document.body.classList.remove('doc-moving');
-      }, 1300);
+      }, 1400);
     }
 
     // Animate all dots to new target coordinates with organic ripple delays
     dots.transition('move')
-      .duration(1000)
+      .duration(1100)
       .delay(d => {
         if (newMode === 'record') {
           const pt = posRecord.get(d.id) || { x: cx, y: cy };
-          return Math.min(260, Math.hypot(pt.x - cx, pt.y - cy) * 0.45);
+          return Math.min(260, Math.max(0, Math.hypot(pt.x - cx, pt.y - cy) * 0.45));
         } else if (newMode === 'timeline') {
-          return Math.min(280, ((d.y || 1995) - 1920) * 2.5);
+          const yr = d.releaseYear || d.y || 1995;
+          return Math.min(280, Math.max(0, (yr - 1920) * 2.8));
         } else if (newMode === 'galaxy') {
           const ms = d.ms != null ? d.ms : 70;
-          return Math.min(280, (ms - 40) * 3.8);
+          return Math.min(280, Math.max(0, (ms - 40) * 3.8));
         }
         return 0;
       })
@@ -952,9 +954,9 @@
   /* ═══════════════════════════════════════════════════════════════════════════
      DATA DOCUMENTARY — Guided Story Tour Engine
      Features: Segmented Timeline Scrubber, True Pause/Resume & Dedicated Stop,
+               Generative Soothing Ambient Music (Eno/Satie Felt Piano),
                Visible Particle Cascade Flight on Mode Transitions,
-               On-Canvas Animated Landmark Leader Pins & Focal Halos,
-               Stacked Movie Spotlight Cards with Full Visibility.
+               Pulsing Focal Halos & Stacked Movie Spotlight Cards.
      ═══════════════════════════════════════════════════════════════════════════ */
 
   // ── Chapter Manifest with Landmark Spotlight Films ────────────────────────
@@ -1038,6 +1040,144 @@
     }
   ];
 
+  // ── Generative Soothing Ambient Music (Eno / Satie Style Felt Piano) ───────
+  class DocGenerativeAudio {
+    constructor() {
+      this.ctx = null;
+      this.muted = false;
+      this.timer = null;
+      this.filter = null;
+      this.masterGain = null;
+      // Soothing pentatonic notes in comfortable mid-range (C4, D4, E4, G4, A4, C5, D5, E5)
+      this.scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+    }
+
+    init() {
+      if (this.ctx) return;
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+    }
+
+    start() {
+      if (this.muted) return;
+      this.init();
+      if (!this.ctx) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      this.stop();
+
+      const now = this.ctx.currentTime;
+      this.filter = this.ctx.createBiquadFilter();
+      this.filter.type = 'lowpass';
+      this.filter.frequency.setValueAtTime(450, now);
+
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(0.0001, now);
+      this.masterGain.gain.exponentialRampToValueAtTime(0.04, now + 1.5);
+
+      this.filter.connect(this.masterGain);
+      this.masterGain.connect(this.ctx.destination);
+
+      // Play immediate welcoming note, then schedule evolving sequence
+      this.playGentleChime();
+      this.scheduleNextNote();
+    }
+
+    scheduleNextNote() {
+      if (!docTourState || docTourState !== 'playing' || this.muted) return;
+
+      const delayMs = 1800 + Math.random() * 1400; // soft note every 1.8s - 3.2s
+      this.timer = setTimeout(() => {
+        if (!docTourState || docTourState !== 'playing' || this.muted) return;
+        this.playGentleChime();
+        this.scheduleNextNote();
+      }, delayMs);
+    }
+
+    playGentleChime() {
+      if (!this.ctx || this.muted) return;
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+
+      const now = this.ctx.currentTime;
+      const freq = this.scale[Math.floor(Math.random() * this.scale.length)];
+
+      // Felt-piano oscillator
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now);
+
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.03); // Soft attack
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4); // Long gentle release
+
+      osc.connect(gain);
+      gain.connect(this.filter);
+      osc.start(now);
+      osc.stop(now + 2.5);
+
+      // Occasional gentle warm fifth harmony
+      if (Math.random() > 0.65) {
+        const hOsc = this.ctx.createOscillator();
+        const hGain = this.ctx.createGain();
+        hOsc.type = 'triangle';
+        hOsc.frequency.setValueAtTime(freq * 1.5, now + 0.08);
+
+        hGain.gain.setValueAtTime(0.0001, now + 0.08);
+        hGain.gain.exponentialRampToValueAtTime(0.012, now + 0.12);
+        hGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+        hOsc.connect(hGain);
+        hGain.connect(this.filter);
+        hOsc.start(now + 0.08);
+        hOsc.stop(now + 2.3);
+      }
+    }
+
+    duck() {
+      if (this.masterGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.008, now + 0.3);
+        } catch (e) {}
+      }
+    }
+
+    unduck() {
+      if (this.masterGain && this.ctx && !this.muted) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.04, now + 0.5);
+        } catch (e) {}
+      }
+    }
+
+    stop() {
+      clearTimeout(this.timer);
+      if (this.masterGain && this.ctx) {
+        try {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+        } catch (e) {}
+      }
+    }
+
+    toggleMute() {
+      this.muted = !this.muted;
+      if (this.muted) {
+        this.stop();
+      } else {
+        if (docTourState === 'playing') this.start();
+      }
+      return this.muted;
+    }
+  }
+
+  const docAudio = new DocGenerativeAudio();
+
   // ── State Management ──────────────────────────────────────────────────────
   let docTourState        = 'idle'; // 'idle' | 'playing' | 'paused'
   let docCurrentChIdx     = -1;
@@ -1050,6 +1190,8 @@
   const docPlayIcon     = document.getElementById('doc-play-icon');
   const docPlayLabel    = document.getElementById('doc-play-label');
   const docStopBtn      = document.getElementById('doc-stop-btn');
+  const docSoundBtn     = document.getElementById('doc-sound-btn');
+  const docSoundIcon    = document.getElementById('doc-sound-icon');
   const docScrubber     = document.getElementById('doc-scrubber');
   const docSegmentsWrap = document.getElementById('doc-segments-container');
   const docCallout      = document.getElementById('doc-callout');
@@ -1102,6 +1244,15 @@
     });
   }
 
+  // ── Sound Toggle Button Listener ─────────────────────────────────────────
+  if (docSoundBtn) {
+    docSoundBtn.addEventListener('click', () => {
+      const isMuted = docAudio.toggleMute();
+      docSoundBtn.classList.toggle('muted', isMuted);
+      docSoundIcon.textContent = isMuted ? '🔇' : '🔊';
+    });
+  }
+
   // ── Coordinates Getter Helper ────────────────────────────────────────────
   function getFilmCoords(id) {
     if (currentMode === 'timeline') return posTimeline.get(id) || { x: cx, y: cy };
@@ -1109,14 +1260,14 @@
     return posRecord.get(id) || { x: cx, y: cy };
   }
 
-  // ── Render Spotlight Halos & On-Canvas Leader Pins ────────────────────────
+  // ── Render Spotlight Halos on SVG Canvas ─────────────────────────────────
   function renderSpotlightHalos(filmIds) {
     spotlightG.selectAll('*').remove();
     dots.classed('doc-spotlight-dot', false);
 
     if (!filmIds || !filmIds.length) return;
 
-    filmIds.forEach((fid, idx) => {
+    filmIds.forEach(fid => {
       const f = filmsById[fid];
       if (!f) return;
 
@@ -1125,48 +1276,11 @@
       const pos = getFilmCoords(fid);
       if (!pos) return;
 
-      // Pulsing Gold Aura Ring
       spotlightG.append('circle')
         .attr('class', 'spotlight-pulse')
         .attr('cx', pos.x)
         .attr('cy', pos.y)
         .attr('r', 8);
-
-      // On-Canvas Floating Leader Flag / Badge
-      const pinG = spotlightG.append('g').attr('class', 'doc-leader-pin');
-      const angle = (idx % 2 === 0) ? -Math.PI / 4 : (3 * Math.PI) / 4;
-      const dist = 32;
-      const targetX = pos.x + Math.cos(angle) * dist;
-      const targetY = pos.y + Math.sin(angle) * dist;
-
-      // Dotted Leader Line
-      pinG.append('line')
-        .attr('class', 'doc-leader-line')
-        .attr('x1', pos.x)
-        .attr('y1', pos.y)
-        .attr('x2', targetX)
-        .attr('y2', targetY);
-
-      // Leader Tag Label
-      const tagText = `\u2605 ${Number(f.r).toFixed(1)} \u00b7 ${f.t}`;
-      const charWidth = 6.2;
-      const tagWidth = Math.min(180, tagText.length * charWidth + 14);
-      const tagHeight = 18;
-      const rectX = targetX > pos.x ? targetX : targetX - tagWidth;
-      const rectY = targetY - tagHeight / 2;
-
-      pinG.append('rect')
-        .attr('class', 'doc-leader-badge-bg')
-        .attr('x', rectX)
-        .attr('y', rectY)
-        .attr('width', tagWidth)
-        .attr('height', tagHeight);
-
-      pinG.append('text')
-        .attr('class', 'doc-leader-badge-text')
-        .attr('x', rectX + 7)
-        .attr('y', rectY + 12)
-        .text(tagText.length > 24 ? tagText.slice(0, 23) + '\u2026' : tagText);
     });
   }
 
@@ -1186,6 +1300,7 @@
     tooltipEl.style.display = 'none';
     overlay.classList.remove('visible');
 
+    docAudio.start();
     docGoToChapter(startIdx);
   }
 
@@ -1215,6 +1330,8 @@
     docPlayIcon.textContent = '\u25b6';
     docPlayLabel.textContent = 'RESUME';
     docPlayBtn.className = 'paused';
+
+    docAudio.duck();
   }
 
   // ── Resume Tour (True Resume) ────────────────────────────────────────────
@@ -1226,6 +1343,8 @@
     docPlayIcon.textContent = '\u23f8';
     docPlayLabel.textContent = 'PAUSE';
     docPlayBtn.className = 'playing';
+
+    docAudio.unduck();
 
     const currentCh = DOC_CHAPTERS[docCurrentChIdx];
     if (!currentCh) {
@@ -1265,6 +1384,7 @@
       docPlayLabel.textContent = 'PAUSE';
       docPlayBtn.className = 'playing';
       if (docStopBtn) docStopBtn.style.display = 'flex';
+      docAudio.unduck();
       docGoToChapter(idx);
     }
   }
@@ -1286,6 +1406,7 @@
     document.body.classList.remove('doc-moving');
 
     docHideCallout();
+    docAudio.stop();
 
     spotlightG.selectAll('*').remove();
     dots.classed('doc-focus', false).classed('doc-spotlight-dot', false);
@@ -1353,15 +1474,16 @@
     activeGenres.clear();
     document.querySelectorAll('.flt-btn').forEach(b => b.classList.remove('active'));
 
-    // Switch visualization mode (runs 1000ms transition with glowing particles)
-    if (ch.mode !== currentMode) {
+    // Switch visualization mode (runs 1100ms transition with glowing particles)
+    const isModeChange = (ch.mode !== currentMode);
+    if (isModeChange) {
       switchMode(ch.mode);
     } else {
       clearConstellations();
     }
 
-    // Step 2: After mode transition settles: apply focus and show landmark cards
-    const settleDelay = (ch.mode !== currentMode) ? 850 : 250;
+    // Step 2: After mode transition flight settles: apply focus and show landmark cards
+    const settleDelay = isModeChange ? 1150 : 250;
 
     setTimeout(() => {
       if (docTourState === 'idle') return;
@@ -1379,7 +1501,7 @@
         ch.decadeFilter ? d.decadeGroup === ch.decadeFilter : true
       );
 
-      // Render pulsing halo rings & on-canvas leader pins
+      // Render pulsing halo rings on SVG for spotlighted films
       renderSpotlightHalos(ch.spotlightFilms || []);
 
       // Populate Landmark Mini-Cards (Stacked for full readability)
