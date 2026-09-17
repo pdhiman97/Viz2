@@ -1040,16 +1040,30 @@
     }
   ];
 
-  // ── Generative Soothing Ambient Music (Eno / Satie Style Felt Piano) ───────
+  // ── Generative Soothing Ambient Music (Eno / Satie Style Ambient Soundscape) ──
   class DocGenerativeAudio {
     constructor() {
       this.ctx = null;
       this.muted = false;
-      this.timer = null;
-      this.filter = null;
+      this.isPlaying = false;
+      this.timerChime = null;
+      this.timerPad = null;
       this.masterGain = null;
-      // Soothing pentatonic notes in comfortable mid-range (C4, D4, E4, G4, A4, C5, D5, E5)
-      this.scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25];
+      this.delayNode = null;
+      this.delayFeedback = null;
+      this.currentChordIdx = 0;
+      this.activePadNodes = [];
+
+      // Soothing pentatonic scale for felt piano notes (C4..G5)
+      this.chimeScale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
+
+      // Lush ambient chord beds (frequencies in Hz)
+      this.chordProgression = [
+        [130.81, 196.00, 246.94, 329.63],         // Cmaj9
+        [110.00, 164.81, 196.00, 261.63, 493.88], // Am9
+        [87.31,  130.81, 220.00, 329.63, 392.00], // Fmaj9
+        [98.00,  146.83, 196.00, 261.63, 293.66]  // Gsus4
+      ];
     }
 
     init() {
@@ -1057,112 +1071,200 @@
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (!AudioCtx) return;
       this.ctx = new AudioCtx();
+
+      // Master Gain
+      this.masterGain = this.ctx.createGain();
+      this.masterGain.gain.setValueAtTime(0.28, this.ctx.currentTime);
+      this.masterGain.connect(this.ctx.destination);
+
+      // Delay effect for spacious cinematic acoustic warmth
+      try {
+        this.delayNode = this.ctx.createDelay();
+        this.delayNode.delayTime.setValueAtTime(0.38, this.ctx.currentTime);
+        this.delayFeedback = this.ctx.createGain();
+        this.delayFeedback.gain.setValueAtTime(0.28, this.ctx.currentTime);
+
+        this.delayNode.connect(this.delayFeedback);
+        this.delayFeedback.connect(this.delayNode);
+        this.delayNode.connect(this.masterGain);
+      } catch (e) {}
     }
 
     start() {
       if (this.muted) return;
       this.init();
       if (!this.ctx) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-      this.stop();
 
-      const now = this.ctx.currentTime;
-      this.filter = this.ctx.createBiquadFilter();
-      this.filter.type = 'lowpass';
-      this.filter.frequency.setValueAtTime(450, now);
+      const run = () => {
+        this.isPlaying = true;
+        this.stopPad();
+        clearTimeout(this.timerChime);
+        clearTimeout(this.timerPad);
 
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.gain.setValueAtTime(0.0001, now);
-      this.masterGain.gain.exponentialRampToValueAtTime(0.04, now + 1.5);
+        if (this.masterGain) {
+          const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(0.001, now);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.28, now + 1.2);
+        }
 
-      this.filter.connect(this.masterGain);
-      this.masterGain.connect(this.ctx.destination);
+        // Start ambient chord pads and gentle felt-piano droplets
+        this.playPadChord();
+        this.playGentleChime();
+        this.scheduleNextChime();
+      };
 
-      // Play immediate welcoming note, then schedule evolving sequence
-      this.playGentleChime();
-      this.scheduleNextNote();
+      if (this.ctx.state === 'suspended') {
+        this.ctx.resume().then(run).catch(() => {});
+      } else {
+        run();
+      }
     }
 
-    scheduleNextNote() {
-      if (!docTourState || docTourState !== 'playing' || this.muted) return;
+    playPadChord() {
+      if (!this.isPlaying || this.muted || !this.ctx) return;
+      const now = this.ctx.currentTime;
+      const chord = this.chordProgression[this.currentChordIdx];
+      this.currentChordIdx = (this.currentChordIdx + 1) % this.chordProgression.length;
 
-      const delayMs = 1800 + Math.random() * 1400; // soft note every 1.8s - 3.2s
-      this.timer = setTimeout(() => {
-        if (!docTourState || docTourState !== 'playing' || this.muted) return;
+      // Filter for warm soft acoustic tone
+      const padFilter = this.ctx.createBiquadFilter();
+      padFilter.type = 'lowpass';
+      padFilter.frequency.setValueAtTime(550, now);
+
+      const padGain = this.ctx.createGain();
+      padGain.gain.setValueAtTime(0.0001, now);
+      padGain.gain.exponentialRampToValueAtTime(0.065, now + 2.0); // 2s smooth swell
+      padGain.gain.setValueAtTime(0.065, now + 5.0);
+      padGain.gain.exponentialRampToValueAtTime(0.0001, now + 7.8); // gentle fade
+
+      padGain.connect(padFilter);
+      padFilter.connect(this.masterGain);
+
+      const chordOscs = chord.map(freq => {
+        const osc = this.ctx.createOscillator();
+        osc.type = 'sine';
+        // Gentle warm detune for chorused cinematic feel
+        const detune = (Math.random() - 0.5) * 8;
+        osc.frequency.setValueAtTime(freq, now);
+        osc.detune.setValueAtTime(detune, now);
+        osc.connect(padGain);
+        osc.start(now);
+        osc.stop(now + 8.0);
+        return osc;
+      });
+
+      this.activePadNodes.push({ oscs: chordOscs, gain: padGain, filter: padFilter });
+      if (this.activePadNodes.length > 3) {
+        this.activePadNodes.shift();
+      }
+
+      // Schedule next crossfading pad chord
+      this.timerPad = setTimeout(() => {
+        if (this.isPlaying && !this.muted) {
+          this.playPadChord();
+        }
+      }, 6200);
+    }
+
+    scheduleNextChime() {
+      if (!this.isPlaying || this.muted) return;
+      const delayMs = 1800 + Math.random() * 1600; // note every 1.8s - 3.4s
+      this.timerChime = setTimeout(() => {
+        if (!this.isPlaying || this.muted) return;
         this.playGentleChime();
-        this.scheduleNextNote();
+        this.scheduleNextChime();
       }, delayMs);
     }
 
     playGentleChime() {
-      if (!this.ctx || this.muted) return;
-      if (this.ctx.state === 'suspended') this.ctx.resume();
-
+      if (!this.ctx || this.muted || !this.isPlaying) return;
       const now = this.ctx.currentTime;
-      const freq = this.scale[Math.floor(Math.random() * this.scale.length)];
+      const freq = this.chimeScale[Math.floor(Math.random() * this.chimeScale.length)];
 
-      // Felt-piano oscillator
+      // Primary sine oscillator for pure felt-piano fundamental
       const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
+      const oscGain = this.ctx.createGain();
       osc.type = 'sine';
       osc.frequency.setValueAtTime(freq, now);
 
-      gain.gain.setValueAtTime(0.0001, now);
-      gain.gain.exponentialRampToValueAtTime(0.035, now + 0.03); // Soft attack
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4); // Long gentle release
+      oscGain.gain.setValueAtTime(0.0001, now);
+      oscGain.gain.exponentialRampToValueAtTime(0.14, now + 0.02); // crisp attack
+      oscGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8); // warm ring
 
-      osc.connect(gain);
-      gain.connect(this.filter);
-      osc.start(now);
-      osc.stop(now + 2.5);
-
-      // Occasional gentle warm fifth harmony
-      if (Math.random() > 0.65) {
-        const hOsc = this.ctx.createOscillator();
-        const hGain = this.ctx.createGain();
-        hOsc.type = 'triangle';
-        hOsc.frequency.setValueAtTime(freq * 1.5, now + 0.08);
-
-        hGain.gain.setValueAtTime(0.0001, now + 0.08);
-        hGain.gain.exponentialRampToValueAtTime(0.012, now + 0.12);
-        hGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-
-        hOsc.connect(hGain);
-        hGain.connect(this.filter);
-        hOsc.start(now + 0.08);
-        hOsc.stop(now + 2.3);
+      osc.connect(oscGain);
+      oscGain.connect(this.masterGain);
+      if (this.delayNode) {
+        oscGain.connect(this.delayNode);
       }
+
+      osc.start(now);
+      osc.stop(now + 3.0);
+
+      // Soft harmonic overtone for felt warmth
+      if (Math.random() > 0.5) {
+        const overtone = this.ctx.createOscillator();
+        const overGain = this.ctx.createGain();
+        overtone.type = 'triangle';
+        overtone.frequency.setValueAtTime(freq * 2, now + 0.01);
+
+        overGain.gain.setValueAtTime(0.0001, now + 0.01);
+        overGain.gain.exponentialRampToValueAtTime(0.035, now + 0.04);
+        overGain.gain.exponentialRampToValueAtTime(0.0001, now + 1.8);
+
+        overtone.connect(overGain);
+        overGain.connect(this.masterGain);
+        overtone.start(now + 0.01);
+        overtone.stop(now + 2.0);
+      }
+    }
+
+    stopPad() {
+      this.activePadNodes.forEach(item => {
+        try {
+          item.oscs.forEach(o => o.stop());
+        } catch (e) {}
+      });
+      this.activePadNodes = [];
     }
 
     duck() {
       if (this.masterGain && this.ctx) {
         try {
           const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
           this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-          this.masterGain.gain.exponentialRampToValueAtTime(0.008, now + 0.3);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.06, now + 0.3);
         } catch (e) {}
       }
     }
 
     unduck() {
-      if (this.masterGain && this.ctx && !this.muted) {
+      if (this.masterGain && this.ctx && !this.muted && this.isPlaying) {
         try {
           const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
           this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-          this.masterGain.gain.exponentialRampToValueAtTime(0.04, now + 0.5);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.28, now + 0.5);
         } catch (e) {}
       }
     }
 
     stop() {
-      clearTimeout(this.timer);
+      this.isPlaying = false;
+      clearTimeout(this.timerChime);
+      clearTimeout(this.timerPad);
       if (this.masterGain && this.ctx) {
         try {
           const now = this.ctx.currentTime;
+          this.masterGain.gain.cancelScheduledValues(now);
           this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
-          this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5);
+          this.masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.4);
         } catch (e) {}
       }
+      setTimeout(() => {
+        this.stopPad();
+      }, 500);
     }
 
     toggleMute() {
@@ -1170,7 +1272,9 @@
       if (this.muted) {
         this.stop();
       } else {
-        if (docTourState === 'playing') this.start();
+        if (docTourState === 'playing') {
+          this.start();
+        }
       }
       return this.muted;
     }
